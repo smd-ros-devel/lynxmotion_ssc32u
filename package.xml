@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <name>lynxmotion_ssc32</name>
+  <version>0.1.0</version>
+  <description>The lynxmotion_ssc32 package contains a ROS driver for the Lynxmotion SSC-32 servo controller.</description>
+  <maintainer email="matthew.w.richard@gmail.com">Matt Richard</maintainer>
+
+  <license>BSD</license>
+
+  <!-- <url type="website">http://ros.org/wiki/lynxmotion_ssc32</url> -->
+  <url type="bugtracker">https://github.com/smd-ros-devel/lynxmotion_ssc32</url>
+  <url type="repository">https://github.com/smd-ros-devel/lynxmotion_ssc32/issues</url>
+
+  <author email="matthew.w.richard@gmail.com">Matt Richard</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>trajectory_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>trajectory_msgs</run_depend>
+
+</package>
