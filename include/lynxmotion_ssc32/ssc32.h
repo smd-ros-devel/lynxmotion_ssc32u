@@ -130,6 +130,6 @@ class SSC32
 		int first_instruction[32];
 };
 
-}; //namespace
+} //namespace
 
 #endif

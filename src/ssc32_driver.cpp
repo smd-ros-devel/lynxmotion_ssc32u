@@ -273,6 +273,59 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 {
 	ros::M_string connection_header = event.getConnectionHeader( );
 	std::string topic = connection_header["topic"];
+	const trajectory_msgs::JointTrajectoryConstPtr &msg = event.getMessage( );
+
+	int num_joints = controllers_map[topic]->joints.size( );
+	SSC32::ServoCommand *cmd = new SSC32::ServoCommand[num_joints];
+
+	bool invalid = false;
+
+	const double scale = 2000.0 / M_PI;
+
+	for( unsigned int i = 0; i < msg->joint_names.size( ) && !invalid; i++ )
+	{
+		if( joints_map.find( msg->joint_names[i] ) != joints_map.end( ) )
+		{
+			Joint *joint = joints_map[msg->joint_names[i]];
+
+			double angle = msg->points[0].positions[i];
+			if(joint->properties.invert)
+				angle *= -1.0;
+
+			// Validate the commanded position (angle)
+			if( angle >= joint->properties.min_angle && angle <= joint->properties.max_angle )
+			{
+				cmd[i].ch = joint->properties.channel;
+				cmd[i].pw = ( unsigned int )( angle * scale + 2500 + 0.5 );
+
+				if( cmd[i].pw < 500 )
+					cmd[i].pw = 500;
+				else if( cmd[i].pw > 2500 )
+					cmd[i].pw = 2500;
+
+				/// \todo calculate cmd[i].spd from velocity
+			}
+			else
+			{
+				invalid = true;
+				ROS_ERROR( "The given position [%f] for joint [%s] is invalid", angle, joint->name.c_str( ) );
+			}
+		}
+		else
+		{
+			invalid = true;
+			ROS_ERROR( "Joint [%s] does not exist", msg->joint_names[i].c_str( ) );
+		}
+	}
+
+	if(!invalid)
+	{
+		// Send command
+		if( !ssc32_dev.move_servo( cmd, num_joints ) )
+			ROS_ERROR( "Failed sending joint commands to controller" );
+	}
+
+	delete[] cmd;
 }
 
-};
+}
