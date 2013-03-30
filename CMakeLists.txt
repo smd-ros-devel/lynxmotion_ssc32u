@@ -22,7 +22,7 @@ target_link_libraries(ssc32_driver ssc32 ${catkin_LIBRARIES})
 add_executable(ssc32_node src/ssc32_node.cpp)
 target_link_libraries(ssc32_node ssc32_driver ${catkin_LIBRARIES})
 
-add_executable(test_ssc32 src/test_ssc32)
+add_executable(test_ssc32 src/test_ssc32.cpp)
 target_link_libraries(test_ssc32 ssc32_driver ${catkin_LIBRARIES})
 
 install(TARGETS ssc32 ssc32_driver ssc32_node test_ssc32
