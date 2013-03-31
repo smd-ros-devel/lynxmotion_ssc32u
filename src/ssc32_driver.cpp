@@ -14,6 +14,7 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 
 	priv_nh.param<std::string>( "port", port, "/dev/ttyUSB0" );
 	priv_nh.param<int>( "baud", baud, 9600 );
+	priv_nh.param<bool>( "publish_joint_states", publish_joint_states, true );
 
 	// Parse joints ros param
 	XmlRpc::XmlRpcValue joints_list;
@@ -174,9 +175,54 @@ SSC32Driver::~SSC32Driver( )
 	}
 }
 
+bool SSC32Driver::init( )
+{
+	SSC32::ServoCommand *cmd;
+	const double scale = 2000.0 / M_PI;
+	bool success = true;
+
+	// Initialize each controller
+	for( unsigned int i = 0; i < controllers.size( ); i++ )
+	{
+		ROS_INFO( "Initializing controller %s", controllers[i]->name.c_str( ) );
+
+		// Only initialize the controller if it's a joint controller
+		if( controllers[i]->type == ControllerTypes::JointController )
+		{
+			cmd = new SSC32::ServoCommand[controllers[i]->joints.size( )];
+
+			for( unsigned int j = 0; j < controllers[i]->joints.size( ); j++ )
+			{
+				Joint *joint = controllers[i]->joints[j];
+
+				cmd[j].ch = joint->properties.channel;
+				cmd[j].pw = ( unsigned int )( joint->properties.default_angle * scale + 1500 + 0.5 );
+
+				if( cmd[i].pw < 500 )
+					cmd[i].pw = 500;
+				else if( cmd[i].pw > 2500 )
+					cmd[i].pw = 2500;
+			}
+
+			// Send command
+			if( !ssc32_dev.move_servo( cmd, controllers[i]->joints.size( ) ) )
+			{
+				ROS_ERROR( "Failed initializing controller %s", controllers[i]->name.c_str( ) );
+				success = false;
+			}
+
+			delete[] cmd;
+		}
+	}
+
+	return success;
+}
+
 bool SSC32Driver::spin( )
 {
-	if( start( ) )
+	bool result = true;
+
+	if( start( ) && init( ) )
 	{
 		ROS_INFO( "Spinning..." );
 
@@ -190,12 +236,12 @@ bool SSC32Driver::spin( )
 	else
 	{
 		ROS_ERROR( "Failed to start" );
-		return false;
+		result = false;
 	}
 
 	stop( );
 
-	return true;
+	return result;
 }
 
 bool SSC32Driver::start( )
@@ -233,13 +279,18 @@ void SSC32Driver::update( )
 {
 	current_time = ros::Time::now( );
 
-	publishJointStates( );
+	if( publish_joint_states )
+	{
+		//publishJointStates( );
+	}
 
 	last_time = current_time;
 }
 
 void SSC32Driver::publishJointStates( )
 {
+	ROS_INFO( "Publishing joint states" );
+
 	for( unsigned int i = 0; i < controllers.size( ); i++ )
 	{
 		if( controllers[i]->publish_joint_states &&
@@ -296,7 +347,7 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 			if( angle >= joint->properties.min_angle && angle <= joint->properties.max_angle )
 			{
 				cmd[i].ch = joint->properties.channel;
-				cmd[i].pw = ( unsigned int )( angle * scale + 2500 + 0.5 );
+				cmd[i].pw = ( unsigned int )( angle * scale + 1500 + 0.5 );
 
 				if( cmd[i].pw < 500 )
 					cmd[i].pw = 500;

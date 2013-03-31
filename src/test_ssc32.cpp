@@ -34,8 +34,12 @@ int main( int argc, char **argv )
 		std::cout << "Usage: " << argv[0] << " COMMAND" << std::endl;
 		std::cout << std::endl;
 		std::cout << "Possible commands:" << std::endl;
-		std::cout << "  -v                     get the software version" << std::endl
-			  << "  -m CH PW [S] [T]       move a servo on channel CH to the given pulse width PW." << std::endl;
+		std::cout << "  -c                     cancel the current command." << std::endl
+			  << "  -d CH LVL              send discrete output to channel CH. LVL must be 0 or 1." << std::endl
+			  << "  -m CH PW [S] [T]       move a servo on channel CH to the given pulse width PW." << std::endl
+			  << "  -o CH OFFSET           offsets channel CH by OFFSET amount." << std::endl
+			  << "  -s                     checks if any servos are currently moving" << std::endl
+			  << "  -v                     get the software version." << std::endl;
 	}
 	else if( strcmp( argv[1], "-v" ) == 0 )
 	{

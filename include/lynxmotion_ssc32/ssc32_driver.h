@@ -58,6 +58,7 @@ class SSC32Driver
 	public:
 		SSC32Driver( ros::NodeHandle &nh );
 		~SSC32Driver( );
+		bool init( );
 		bool spin( );
 		bool start( );
 		void stop( );
@@ -75,6 +76,7 @@ class SSC32Driver
 
 		std::string port;
 		int baud;
+		bool publish_joint_states;
 		std::vector<Controller*> controllers;
 		std::map<std::string, Controller*> controllers_map;
 		std::map<std::string, Joint*> joints_map;
