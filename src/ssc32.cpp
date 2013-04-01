@@ -62,16 +62,22 @@ bool SSC32::open_port( const char *port, int baud )
 		return false;
 	}
 
-	cfmakeraw( &options );
+	//cfmakeraw( &options );
+	memset(&options, 0, sizeof(options));
 	cfsetispeed( &options, baud );
 	cfsetospeed( &options, baud );
 
-	options.c_lflag &= ~( ICANON | ISIG );
-	options.c_lflag &= ~( ECHO | ECHOE );
-	options.c_iflag &= ~( IXON | IXOFF | IXANY );
-	options.c_oflag &= ~OPOST;
-	options.c_cc[VMIN] = 0;
-	options.c_cc[VTIME] = 10;
+	//options.c_lflag &= ~( ICANON | ISIG );
+	//options.c_lflag &= ~( ECHO | ECHOE );
+	//options.c_iflag &= ~( IXON | IXOFF | IXANY );
+	//options.c_oflag &= ~OPOST;
+	//options.c_cc[VMIN] = 0;
+	//options.c_cc[VTIME] = 10;
+
+	options.c_iflag = IGNBRK | IGNPAR;
+	options.c_oflag = 0;
+	options.c_cflag |= CREAD | CS8 | CLOCAL;
+	options.c_lflag = 0;
 
 	if( tcsetattr( fd, TCSANOW, &options ) < 0 )
 	{

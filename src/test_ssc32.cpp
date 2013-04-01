@@ -5,12 +5,27 @@
 int atoi( const char *a, int n )
 {
 	int num = 0;
+	bool negate = false;
+	int i = 0;
 
-	for( int i = 0; i < n; i++ )
+	if( n <= 0 )
+		return -1;
+
+	if( a[i] == '-' )
+	{
+		negate = true;
+		i++;
+	}
+
+	while( i < n )
 	{
 		num *= 10;
 		num += ( a[i] - '0' );
+		i++;
 	}
+
+	if( negate )
+		num *= -1;
 
 	return num;
 }

@@ -10,11 +10,11 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 	for( int i = 0; i < 32; i++ )
 		channels[i] = NULL;
 
-	ros::NodeHandle priv_nh( "~" );
+	//ros::NodeHandle priv_nh( "~" );
 
-	priv_nh.param<std::string>( "port", port, "/dev/ttyUSB0" );
-	priv_nh.param<int>( "baud", baud, 9600 );
-	priv_nh.param<bool>( "publish_joint_states", publish_joint_states, true );
+	nh.param<std::string>( "port", port, "/dev/ttyUSB0" );
+	nh.param<int>( "baud", baud, 9600 );
+	nh.param<bool>( "publish_joint_states", publish_joint_states, true );
 
 	// Parse joints ros param
 	XmlRpc::XmlRpcValue joints_list;
@@ -198,10 +198,10 @@ bool SSC32Driver::init( )
 				cmd[j].ch = joint->properties.channel;
 				cmd[j].pw = ( unsigned int )( joint->properties.default_angle * scale + 1500 + 0.5 );
 
-				if( cmd[i].pw < 500 )
-					cmd[i].pw = 500;
-				else if( cmd[i].pw > 2500 )
-					cmd[i].pw = 2500;
+				if( cmd[j].pw < 500 )
+					cmd[j].pw = 500;
+				else if( cmd[j].pw > 2500 )
+					cmd[j].pw = 2500;
 			}
 
 			// Send command
@@ -281,7 +281,7 @@ void SSC32Driver::update( )
 
 	if( publish_joint_states )
 	{
-		//publishJointStates( );
+		publishJointStates( );
 	}
 
 	last_time = current_time;
