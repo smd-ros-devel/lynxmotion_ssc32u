@@ -179,7 +179,7 @@ SSC32Driver::~SSC32Driver( )
 bool SSC32Driver::init( )
 {
 	SSC32::ServoCommand *cmd;
-	const double scale = 2000.0 / M_PI;
+	const double scale = 0.85 * 2000.0 / M_PI;
 	bool success = true;
 
 	// Initialize each controller
@@ -201,7 +201,7 @@ bool SSC32Driver::init( )
 				cmd[j].pw = ( unsigned int )( scale * ( joint->properties.default_angle - joint->properties.offset_angle ) + 1500 + 0.5 );
 
 
-				ROS_DEBUG( "Initializing channel %d to pulse width %d", cmd[j].ch, cmd[j].pw );
+				ROS_INFO( "Initializing channel %d to pulse width %d", cmd[j].ch, cmd[j].pw );
 
 				if( joint->properties.invert )
 					cmd[j].pw = 3000 - cmd[j].pw;
@@ -329,6 +329,9 @@ void SSC32Driver::publishJointStates( )
 
 				int pw = ssc32_dev.query_pulse_width( controllers[i]->joints[j]->properties.channel );
 
+				if( controllers[i]->joints[j]->properties.invert )
+					pw = 3000 - pw;
+
 				//ROS_DEBUG( "Pulse width for joint [%s] is %d", controllers[i]->joints[j]->name.c_str( ), pw );
 
 				//double angle = M_PI_2 * ( ( double )pw - controllers[i]->joints[j]->properties.default_angle ) / 1000.0;
@@ -336,8 +339,8 @@ void SSC32Driver::publishJointStates( )
 
 				//ROS_DEBUG( "Angle calculated for joint [%s] is %f", controllers[i]->joints[j]->name.c_str( ), angle );
 
-				if( controllers[i]->joints[j]->properties.invert )
-					angle *= -1;
+				//if( controllers[i]->joints[j]->properties.invert )
+				//	angle *= -1;
 
 				joints.position.push_back( angle );
 			}
@@ -401,8 +404,8 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 	if(!invalid)
 	{
 		// Send command
-		if( !ssc32_dev.move_servo( cmd, num_joints ) )
-			ROS_ERROR( "Failed sending joint commands to controller" );
+//		if( !ssc32_dev.move_servo( cmd, num_joints ) )
+//			ROS_ERROR( "Failed sending joint commands to controller" );
 	}
 
 	delete[] cmd;
