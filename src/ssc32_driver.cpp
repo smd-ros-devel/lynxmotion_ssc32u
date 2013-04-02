@@ -10,15 +10,15 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 	for( int i = 0; i < 32; i++ )
 		channels[i] = NULL;
 
-	//ros::NodeHandle priv_nh( "~" );
+	ros::NodeHandle priv_nh( "~" );
 
-	nh.param<std::string>( "port", port, "/dev/ttyUSB0" );
-	nh.param<int>( "baud", baud, 9600 );
-	nh.param<bool>( "publish_joint_states", publish_joint_states, true );
+	priv_nh.param<std::string>( "port", port, "/dev/ttyUSB0" );
+	priv_nh.param<int>( "baud", baud, 9600 );
+	priv_nh.param<bool>( "publish_joint_states", publish_joint_states, true );
 
 	// Parse joints ros param
 	XmlRpc::XmlRpcValue joints_list;
-	if( nh.getParam( "joints", joints_list ) )
+	if( priv_nh.getParam( "joints", joints_list ) )
 	{
 		ROS_ASSERT( joints_list.getType( ) == XmlRpc::XmlRpcValue::TypeStruct );
 
@@ -34,16 +34,16 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 
 			std::string joint_graph_name = "joints/" + joint->name + "/";
 
-			nh.param<int>( joint_graph_name + "channel", joint->properties.channel, 0 );
+			priv_nh.param<int>( joint_graph_name + "channel", joint->properties.channel, 0 );
 
 			// Channel must be between 0 and 31, inclusive
 			ROS_ASSERT( joint->properties.channel >= 0 );
 			ROS_ASSERT( joint->properties.channel <= 31 );
 
-			nh.param<double>( joint_graph_name + "max_angle", joint->properties.max_angle, M_PI_2 );
-			nh.param<double>( joint_graph_name + "min_angle", joint->properties.min_angle, -M_PI_2 );
-			nh.param<double>( joint_graph_name + "default_angle", joint->properties.default_angle, 0 );
-			nh.param<bool>( joint_graph_name + "invert", joint->properties.invert, false );
+			priv_nh.param<double>( joint_graph_name + "max_angle", joint->properties.max_angle, M_PI_2 );
+			priv_nh.param<double>( joint_graph_name + "min_angle", joint->properties.min_angle, -M_PI_2 );
+			priv_nh.param<double>( joint_graph_name + "default_angle", joint->properties.default_angle, 0 );
+			priv_nh.param<bool>( joint_graph_name + "invert", joint->properties.invert, false );
 
 			// Make sure no two joints have the same channel
 			ROS_ASSERT( channels[joint->properties.channel] == NULL );
@@ -63,7 +63,7 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 
 	// Parse controllers ros param
 	XmlRpc::XmlRpcValue controllers_list;
-	if( nh.getParam( "controllers", controllers_list ) )
+	if( priv_nh.getParam( "controllers", controllers_list ) )
 	{
 		ROS_ASSERT( controllers_list.getType( ) == XmlRpc::XmlRpcValue::TypeStruct );
 
@@ -82,7 +82,7 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 			std::string controller_graph_name = "controllers/" + controller->name + "/";
 
 			std::string controller_type;
-			nh.param<std::string>( controller_graph_name + "type", controller_type, "joint_controller" );
+			priv_nh.param<std::string>( controller_graph_name + "type", controller_type, "joint_controller" );
 
 			// Validate the controller type
 			if( controller_type == "joint_controller" )
@@ -97,10 +97,10 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 				ROS_BREAK( );
 			}
 
-			nh.param<bool>( controller_graph_name + "publish_joint_states", controller->publish_joint_states, true );
+			priv_nh.param<bool>( controller_graph_name + "publish_joint_states", controller->publish_joint_states, true );
 
 			// Get publish rate
-			nh.param<double>( controller_graph_name + "publish_rate", controller->publish_rate, 10.0 );
+			priv_nh.param<double>( controller_graph_name + "publish_rate", controller->publish_rate, 10.0 );
 			if( controller->publish_rate <= 0.0 )
 			{
 				controller->expected_publish_time = 0.0;
@@ -110,7 +110,7 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 				controller->expected_publish_time = ( 1.0 / controller->publish_rate );
 
 			// Make sure the controller has joints
-			if( nh.getParam( controller_graph_name + "joints", joints_list ) )
+			if( priv_nh.getParam( controller_graph_name + "joints", joints_list ) )
 			{
 				ROS_ASSERT( joints_list.getType( ) == XmlRpc::XmlRpcValue::TypeArray );
 
