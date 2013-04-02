@@ -59,6 +59,7 @@ class SSC32Driver
 		SSC32Driver( ros::NodeHandle &nh );
 		~SSC32Driver( );
 		bool init( );
+		bool relaxJoints( );
 		bool spin( );
 		bool start( );
 		void stop( );

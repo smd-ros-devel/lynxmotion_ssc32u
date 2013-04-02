@@ -40,6 +40,7 @@ class SSC32
 		SSC32( );
 		~SSC32( );
 		bool open_port( const char *port, int baud );
+		bool is_connected( );
 		void close_port( );
 		bool move_servo( struct ServoCommand cmd, int time = -1 );
 		bool move_servo( struct ServoCommand cmd[], unsigned int n, int time = -1 );

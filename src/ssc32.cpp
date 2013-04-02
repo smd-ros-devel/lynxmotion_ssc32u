@@ -1,7 +1,7 @@
 #include "lynxmotion_ssc32/ssc32.h"
 
 #ifndef DEBUG
-#define DEBUG 1
+#define DEBUG 0
 #endif
 
 namespace lynxmotion_ssc32
@@ -92,6 +92,11 @@ bool SSC32::open_port( const char *port, int baud )
 	printf( "Successfully opened port %s\n", port );
 
 	return true;
+}
+
+bool SSC32::is_connected( )
+{
+	return ( fd != -1 );
 }
 
 void SSC32::close_port( )

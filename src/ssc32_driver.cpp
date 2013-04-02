@@ -184,7 +184,7 @@ bool SSC32Driver::init( )
 	// Initialize each controller
 	for( unsigned int i = 0; i < controllers.size( ); i++ )
 	{
-		ROS_INFO( "Initializing controller %s", controllers[i]->name.c_str( ) );
+		ROS_DEBUG( "Initializing controller %s", controllers[i]->name.c_str( ) );
 
 		// Only initialize the controller if it's a joint controller
 		if( controllers[i]->type == ControllerTypes::JointController )
@@ -216,6 +216,22 @@ bool SSC32Driver::init( )
 	}
 
 	return success;
+}
+
+bool SSC32Driver::relaxJoints( )
+{
+	ROS_INFO( "Relaxing joints" );
+
+	if( ssc32_dev.is_connected( ) )
+	{
+		for( unsigned int i = 0; i < 32; i++ )
+		{
+			if( channels[i] != NULL )
+				ssc32_dev.discrete_output( i, SSC32::Low );
+		}
+	}
+
+	return true;
 }
 
 bool SSC32Driver::spin( )
@@ -266,6 +282,8 @@ void SSC32Driver::stop( )
 {
 	ROS_INFO( "Stopping SSC32Driver" );
 
+	relaxJoints( );
+
 	nh.shutdown( );
 
 	joint_state_pubs_map.clear( );
@@ -289,8 +307,6 @@ void SSC32Driver::update( )
 
 void SSC32Driver::publishJointStates( )
 {
-	ROS_INFO( "Publishing joint states" );
-
 	for( unsigned int i = 0; i < controllers.size( ); i++ )
 	{
 		if( controllers[i]->publish_joint_states &&
