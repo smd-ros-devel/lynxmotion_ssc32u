@@ -429,7 +429,7 @@ int SSC32::query_pulse_width( unsigned int ch )
 		}
 	}
 
-	return (int)buffer;
+	return ( 10 * ( int )buffer );
 }
 
 /*

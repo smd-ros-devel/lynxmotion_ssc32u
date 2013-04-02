@@ -42,7 +42,8 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 
 			priv_nh.param<double>( joint_graph_name + "max_angle", joint->properties.max_angle, M_PI_2 );
 			priv_nh.param<double>( joint_graph_name + "min_angle", joint->properties.min_angle, -M_PI_2 );
-			priv_nh.param<double>( joint_graph_name + "default_angle", joint->properties.default_angle, 0 );
+			priv_nh.param<double>( joint_graph_name + "offset_angle", joint->properties.offset_angle, 0 );
+			priv_nh.param<double>( joint_graph_name + "default_angle", joint->properties.default_angle, joint->properties.offset_angle );
 			priv_nh.param<bool>( joint_graph_name + "invert", joint->properties.invert, false );
 
 			// Make sure no two joints have the same channel
@@ -194,9 +195,16 @@ bool SSC32Driver::init( )
 			for( unsigned int j = 0; j < controllers[i]->joints.size( ); j++ )
 			{
 				Joint *joint = controllers[i]->joints[j];
+				//double angle = joint->properties.default_angle - joint->properties.offset_angle;
 
 				cmd[j].ch = joint->properties.channel;
-				cmd[j].pw = ( unsigned int )( joint->properties.default_angle * scale + 1500 + 0.5 );
+				cmd[j].pw = ( unsigned int )( scale * ( joint->properties.default_angle - joint->properties.offset_angle ) + 1500 + 0.5 );
+
+
+				ROS_DEBUG( "Initializing channel %d to pulse width %d", cmd[j].ch, cmd[j].pw );
+
+				if( joint->properties.invert )
+					cmd[j].pw = 3000 - cmd[j].pw;
 
 				if( cmd[j].pw < 500 )
 					cmd[j].pw = 500;
@@ -319,9 +327,14 @@ void SSC32Driver::publishJointStates( )
 			{
 				joints.name.push_back( controllers[i]->joints[j]->name );
 
-				/// \todo Query the device for the joint's position
 				int pw = ssc32_dev.query_pulse_width( controllers[i]->joints[j]->properties.channel );
-				double angle = M_PI_2 * ( ( double )pw - controllers[i]->joints[j]->properties.default_angle ) / 1000.0;
+
+				//ROS_DEBUG( "Pulse width for joint [%s] is %d", controllers[i]->joints[j]->name.c_str( ), pw );
+
+				//double angle = M_PI_2 * ( ( double )pw - controllers[i]->joints[j]->properties.default_angle ) / 1000.0;
+				double angle = M_PI * ( ( double ) pw - 1500.0 ) / 2000.0 + controllers[i]->joints[j]->properties.offset_angle;
+
+				//ROS_DEBUG( "Angle calculated for joint [%s] is %f", controllers[i]->joints[j]->name.c_str( ), angle );
 
 				if( controllers[i]->joints[j]->properties.invert )
 					angle *= -1;
@@ -363,7 +376,7 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 			if( angle >= joint->properties.min_angle && angle <= joint->properties.max_angle )
 			{
 				cmd[i].ch = joint->properties.channel;
-				cmd[i].pw = ( unsigned int )( angle * scale + 1500 + 0.5 );
+				cmd[i].pw = ( unsigned int )( angle * scale + joint->properties.offset_angle + 1500 + 0.5 );
 
 				if( cmd[i].pw < 500 )
 					cmd[i].pw = 500;
@@ -372,7 +385,7 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 
 				/// \todo calculate cmd[i].spd from velocity
 			}
-			else
+			else // invalid angle given
 			{
 				invalid = true;
 				ROS_ERROR( "The given position [%f] for joint [%s] is invalid", angle, joint->name.c_str( ) );

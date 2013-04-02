@@ -19,7 +19,8 @@ struct Joint
 		int channel;
 		double min_angle;
 		double max_angle;
-		double default_angle;
+		double offset_angle; // this angle is considered to be 1500 uS
+		double default_angle; // angle that the joint is initialized to (defaults to the offset_angle)
 		bool invert;
 	};
 
