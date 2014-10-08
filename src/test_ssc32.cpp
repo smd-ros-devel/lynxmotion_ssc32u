@@ -103,7 +103,7 @@ int main( int argc, char **argv )
 		if( !ssc32_device.open_port( port.c_str( ), baud ) )
 			return 1;
 
-		std::cout << "Sending command to move servo " << cmd.ch << " to pulse width " << cmd.ch << std::endl;
+		std::cout << "Sending command to move servo " << cmd.ch << " to pulse width " << cmd.pw << std::endl;
 
 		if( !ssc32_device.move_servo( cmd, time ) )
 			return 1;

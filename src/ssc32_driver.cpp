@@ -13,7 +13,7 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 	ros::NodeHandle priv_nh( "~" );
 
 	priv_nh.param<std::string>( "port", port, "/dev/ttyUSB0" );
-	priv_nh.param<int>( "baud", baud, 9600 );
+	priv_nh.param<int>( "baud", baud, 115200 );
 	priv_nh.param<bool>( "publish_joint_states", publish_joint_states, true );
 
 	// Parse joints ros param
