@@ -16,6 +16,14 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 	priv_nh.param<int>( "baud", baud, 115200 );
 	priv_nh.param<bool>( "publish_joint_states", publish_joint_states, true );
 
+	// 180 degree servos seem to have a slightly greater range than 180 degrees.
+	// This parameter allows for scaling the range for attempting to get
+	// it to be closer to 180 degrees, or 90 degrees for 90 degree servos.
+	priv_nh.param<double>( "range_scale", range_scale, 1.0 );
+
+	if ( range_scale > 1 || range_scale <= 0 )
+		range_scale = 1.0;
+
 	// Parse joints ros param
 	XmlRpc::XmlRpcValue joints_list;
 	if( priv_nh.getParam( "joints", joints_list ) )
@@ -181,7 +189,7 @@ SSC32Driver::~SSC32Driver( )
 bool SSC32Driver::init( )
 {
 	SSC32::ServoCommand *cmd;
-	const double scale = 0.85 * 2000.0 / M_PI;
+	const double scale = range_scale * 2000.0 / M_PI;
 	bool success = true;
 
 	// Initialize each controller

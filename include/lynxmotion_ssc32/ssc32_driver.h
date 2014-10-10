@@ -82,6 +82,7 @@ class SSC32Driver
 		std::string port;
 		int baud;
 		bool publish_joint_states;
+		double range_scale;
 		std::vector<Controller*> controllers;
 		std::map<std::string, Controller*> controllers_map;
 		std::map<std::string, Joint*> joints_map;
