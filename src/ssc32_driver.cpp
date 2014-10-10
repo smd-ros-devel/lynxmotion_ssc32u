@@ -291,6 +291,16 @@ bool SSC32Driver::start( )
 	if( !ssc32_dev.open_port( port.c_str( ), baud ) )
 		return false;
 
+	std::string version = ssc32_dev.get_version( );
+	if( version.empty( ) )
+	{
+		ROS_ERROR( "Unable to get software version" );
+		ROS_INFO( "Verify the baud rate is set to the correct value" );
+		return false;
+	}
+
+	ROS_INFO( "SSC32 Software Version: %s", version.c_str( ) );
+
 	// Subscribe and advertise for every controller
 	for( unsigned int i = 0; i < controllers.size( ); i++ )
 	{
