@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <trajectory_msgs/JointTrajectory.h>
+#include <std_srvs/Empty.h>
 #include <XmlRpcValue.h>
 #include <string>
 #include <vector>
@@ -61,6 +62,7 @@ class SSC32Driver
 		~SSC32Driver( );
 		bool init( );
 		bool relaxJoints( );
+		bool relaxJointsCallback( std_srvs::Empty::Request& request, std_srvs::Empty::Response& response );
 		bool spin( );
 		bool start( );
 		void stop( );
@@ -71,6 +73,7 @@ class SSC32Driver
 		void jointCallback( const ros::MessageEvent<trajectory_msgs::JointTrajectory const>& event );
 
 		ros::NodeHandle nh;
+		ros::ServiceServer relax_joints_service;
 		std::vector<ros::Subscriber> joint_subs;
 		std::map<std::string, ros::Publisher> joint_state_pubs_map;
 

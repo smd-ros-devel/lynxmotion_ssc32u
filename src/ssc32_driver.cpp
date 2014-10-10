@@ -158,6 +158,8 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 		ROS_FATAL( "No controllers were given" );
 		ROS_BREAK( );
 	}
+
+	relax_joints_service = nh.advertiseService( "relax_joints", &SSC32Driver::relaxJointsCallback, this );
 }
 
 SSC32Driver::~SSC32Driver( )
@@ -240,6 +242,11 @@ bool SSC32Driver::relaxJoints( )
 	}
 
 	return true;
+}
+
+bool SSC32Driver::relaxJointsCallback( std_srvs::Empty::Request& request, std_srvs::Empty::Response& response )
+{
+	return relaxJoints( );
 }
 
 bool SSC32Driver::spin( )
