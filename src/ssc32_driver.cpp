@@ -52,6 +52,7 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 			priv_nh.param<double>( joint_graph_name + "min_angle", joint->properties.min_angle, -M_PI_2 );
 			priv_nh.param<double>( joint_graph_name + "offset_angle", joint->properties.offset_angle, 0 );
 			priv_nh.param<double>( joint_graph_name + "default_angle", joint->properties.default_angle, joint->properties.offset_angle );
+			priv_nh.param<bool>( joint_graph_name + "initialize", joint->properties.initialize, true );
 			priv_nh.param<bool>( joint_graph_name + "invert", joint->properties.invert, false );
 
 			// Make sure no two joints have the same channel
@@ -205,21 +206,23 @@ bool SSC32Driver::init( )
 			for( unsigned int j = 0; j < controllers[i]->joints.size( ); j++ )
 			{
 				Joint *joint = controllers[i]->joints[j];
-				//double angle = joint->properties.default_angle - joint->properties.offset_angle;
 
-				cmd[j].ch = joint->properties.channel;
-				cmd[j].pw = ( unsigned int )( scale * ( joint->properties.default_angle - joint->properties.offset_angle ) + 1500 + 0.5 );
+				if( joint->properties.initialize )
+				{
+					cmd[j].ch = joint->properties.channel;
+					cmd[j].pw = ( unsigned int )( scale * ( joint->properties.default_angle - joint->properties.offset_angle ) + 1500 + 0.5 );
 
 
-				ROS_INFO( "Initializing channel %d to pulse width %d", cmd[j].ch, cmd[j].pw );
+					ROS_INFO( "Initializing channel %d to pulse width %d", cmd[j].ch, cmd[j].pw );
 
-				if( joint->properties.invert )
-					cmd[j].pw = 3000 - cmd[j].pw;
+					if( joint->properties.invert )
+						cmd[j].pw = 3000 - cmd[j].pw;
 
-				if( cmd[j].pw < 500 )
-					cmd[j].pw = 500;
-				else if( cmd[j].pw > 2500 )
-					cmd[j].pw = 2500;
+					if( cmd[j].pw < 500 )
+						cmd[j].pw = 500;
+					else if( cmd[j].pw > 2500 )
+						cmd[j].pw = 2500;
+				}
 			}
 
 			// Send command

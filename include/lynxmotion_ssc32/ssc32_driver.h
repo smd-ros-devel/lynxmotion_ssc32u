@@ -22,6 +22,7 @@ struct Joint
 		double max_angle;
 		double offset_angle; // this angle is considered to be 1500 uS
 		double default_angle; // angle that the joint is initialized to (defaults to the offset_angle)
+		bool initialize; // Indicates whether to initialize the servo to the default angle on startup.
 		bool invert;
 	};
 
