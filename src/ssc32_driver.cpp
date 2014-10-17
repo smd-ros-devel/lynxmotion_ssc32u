@@ -456,8 +456,8 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 	if(!invalid)
 	{
 		// Send command
-//		if( !ssc32_dev.move_servo( cmd, num_joints ) )
-//			ROS_ERROR( "Failed sending joint commands to controller" );
+		if( !ssc32_dev.move_servo( cmd, num_joints ) )
+			ROS_ERROR( "Failed sending joint commands to controller" );
 	}
 
 	delete[] cmd;
