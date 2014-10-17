@@ -1,5 +1,6 @@
 #include "lynxmotion_ssc32/ssc32_driver.h"
 #include "math.h"
+#include <algorithm>
 
 namespace lynxmotion_ssc32
 {
@@ -383,8 +384,25 @@ void SSC32Driver::publishJointStates( )
 void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointTrajectory const>& event )
 {
 	ros::M_string connection_header = event.getConnectionHeader( );
-	std::string topic = connection_header["topic"];
 	const trajectory_msgs::JointTrajectoryConstPtr &msg = event.getMessage( );
+
+	std::string topic = connection_header["topic"];
+
+	// Remove beginning '/'
+	if( topic.length( ) > 0 && topic[0] == '/')
+		topic.erase( 0, 1 );
+
+	// Extract the controller name from the topic
+	std::string::iterator it = find( topic.begin( ), topic.end( ), '/' );
+	if( it != topic.end( ) )
+		topic.erase( it, topic.end( ) );
+
+	// Validate the controller name
+	if( controllers_map.find( topic ) == controllers_map.end() )
+	{
+		ROS_ERROR( "Topic [%s] is not a valid controller name.", topic.c_str( ) );
+		return;
+	}
 
 	int num_joints = controllers_map[topic]->joints.size( );
 	SSC32::ServoCommand *cmd = new SSC32::ServoCommand[num_joints];
