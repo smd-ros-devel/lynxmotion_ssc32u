@@ -388,8 +388,14 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 
 	std::string topic = connection_header["topic"];
 
+	if( topic.empty( ) )
+	{
+		ROS_ERROR( "The connection header topic is empty" );
+		return;
+	}
+
 	// Remove beginning '/'
-	if( topic.length( ) > 0 && topic[0] == '/')
+	if( topic[0] == '/')
 		topic.erase( 0, 1 );
 
 	// Extract the controller name from the topic
@@ -400,7 +406,7 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 	// Validate the controller name
 	if( controllers_map.find( topic ) == controllers_map.end() )
 	{
-		ROS_ERROR( "Topic [%s] is not a valid controller name.", topic.c_str( ) );
+		ROS_ERROR( "[%s] is not a valid controller name.", topic.c_str( ) );
 		return;
 	}
 
