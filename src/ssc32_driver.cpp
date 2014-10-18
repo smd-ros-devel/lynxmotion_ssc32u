@@ -438,7 +438,8 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 				else if( cmd[i].pw > 2500 )
 					cmd[i].pw = 2500;
 
-				/// \todo calculate cmd[i].spd from velocity
+				if( msg->points[0].velocities.size( ) >= i && msg->points[0].velocities[i] > 0 )
+					cmd[i].spd = scale * msg->points[0].velocities[i];
 			}
 			else // invalid angle given
 			{
