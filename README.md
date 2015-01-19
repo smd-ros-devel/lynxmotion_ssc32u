@@ -1,4 +1,4 @@
 lynxmotion_ssc32
 ================
 
-ROS driver for the Lynxmotion SSC-32 servo controller.
+ROS driver for the Lynxmotion SSC-32 and SSC-32U servo controller.

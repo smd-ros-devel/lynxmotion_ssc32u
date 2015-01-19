@@ -415,7 +415,7 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 
 	bool invalid = false;
 
-	const double scale = 2000.0 / M_PI;
+	const double scale = range_scale * 2000.0 / M_PI;
 
 	for( unsigned int i = 0; i < msg->joint_names.size( ) && !invalid; i++ )
 	{
@@ -424,15 +424,14 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 			Joint *joint = joints_map[msg->joint_names[i]];
 
 			double angle = msg->points[0].positions[i];
-			if(joint->properties.invert)
-				angle *= -1.0;
 
 			// Validate the commanded position (angle)
 			if( angle >= joint->properties.min_angle && angle <= joint->properties.max_angle )
 			{
 				cmd[i].ch = joint->properties.channel;
-				cmd[i].pw = ( unsigned int )( angle * scale + joint->properties.offset_angle + 1500 + 0.5 );
-
+				cmd[i].pw = ( unsigned int )( scale * ( angle - joint->properties.offset_angle ) + 1500 + 0.5 );
+				if( joint->properties.invert )
+					cmd[i].pw = 3000 - cmd[i].pw;
 				if( cmd[i].pw < 500 )
 					cmd[i].pw = 500;
 				else if( cmd[i].pw > 2500 )
