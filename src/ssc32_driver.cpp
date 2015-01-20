@@ -362,9 +362,9 @@ void SSC32Driver::publishJointStates( )
 					pw = 3000 - pw;
 
 				//ROS_DEBUG( "Pulse width for joint [%s] is %d", controllers[i]->joints[j]->name.c_str( ), pw );
-
+				const double scale = range_scale * 2000.0 / M_PI;
 				//double angle = M_PI_2 * ( ( double )pw - controllers[i]->joints[j]->properties.default_angle ) / 1000.0;
-				double angle = M_PI * ( ( double ) pw - 1500.0 ) / 2000.0 + controllers[i]->joints[j]->properties.offset_angle;
+				double angle = ( ( double ) pw - 1500.0 ) / scale + controllers[i]->joints[j]->properties.offset_angle;
 
 				//ROS_DEBUG( "Angle calculated for joint [%s] is %f", controllers[i]->joints[j]->name.c_str( ), angle );
 
