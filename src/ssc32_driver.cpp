@@ -24,6 +24,7 @@ SSC32Driver::SSC32Driver( ros::NodeHandle &nh ) :
 
 	if ( range_scale > 1 || range_scale <= 0 )
 		range_scale = 1.0;
+	scale = range_scale * 2000.0 / M_PI;
 
 	// Parse joints ros param
 	XmlRpc::XmlRpcValue joints_list;
@@ -191,7 +192,6 @@ SSC32Driver::~SSC32Driver( )
 bool SSC32Driver::init( )
 {
 	SSC32::ServoCommand *cmd;
-	const double scale = range_scale * 2000.0 / M_PI;
 	bool success = true;
 
 	// Initialize each controller
@@ -362,9 +362,8 @@ void SSC32Driver::publishJointStates( )
 					pw = 3000 - pw;
 
 				//ROS_DEBUG( "Pulse width for joint [%s] is %d", controllers[i]->joints[j]->name.c_str( ), pw );
-
 				//double angle = M_PI_2 * ( ( double )pw - controllers[i]->joints[j]->properties.default_angle ) / 1000.0;
-				double angle = M_PI * ( ( double ) pw - 1500.0 ) / 2000.0 + controllers[i]->joints[j]->properties.offset_angle;
+				double angle = ( ( double ) pw - 1500.0 ) / scale + controllers[i]->joints[j]->properties.offset_angle;
 
 				//ROS_DEBUG( "Angle calculated for joint [%s] is %f", controllers[i]->joints[j]->name.c_str( ), angle );
 
@@ -415,7 +414,6 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 
 	bool invalid = false;
 
-	const double scale = 2000.0 / M_PI;
 
 	for( unsigned int i = 0; i < msg->joint_names.size( ) && !invalid; i++ )
 	{
@@ -424,15 +422,14 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 			Joint *joint = joints_map[msg->joint_names[i]];
 
 			double angle = msg->points[0].positions[i];
-			if(joint->properties.invert)
-				angle *= -1.0;
 
 			// Validate the commanded position (angle)
 			if( angle >= joint->properties.min_angle && angle <= joint->properties.max_angle )
 			{
 				cmd[i].ch = joint->properties.channel;
-				cmd[i].pw = ( unsigned int )( angle * scale + joint->properties.offset_angle + 1500 + 0.5 );
-
+				cmd[i].pw = ( unsigned int )( scale * ( angle - joint->properties.offset_angle ) + 1500 + 0.5 );
+				if( joint->properties.invert )
+					cmd[i].pw = 3000 - cmd[i].pw;
 				if( cmd[i].pw < 500 )
 					cmd[i].pw = 500;
 				else if( cmd[i].pw > 2500 )
