@@ -8,6 +8,7 @@
 #include <XmlRpcValue.h>
 #include <string>
 #include <vector>
+#include <queue>
 #include "ssc32.h"
 
 namespace lynxmotion_ssc32
@@ -56,6 +57,14 @@ struct Controller
 		friend class SSC32Driver;
 };
 
+struct Command
+{
+	SSC32::ServoCommand *cmd;
+	int num_joints;
+	ros::Time start_time;
+	ros::Duration duration;
+};
+
 class SSC32Driver
 {
 	public:
@@ -72,6 +81,7 @@ class SSC32Driver
 	private:
 		void publishJointStates( );
 		void jointCallback( const ros::MessageEvent<trajectory_msgs::JointTrajectory const>& event );
+		void execute_command( );
 
 		ros::NodeHandle nh;
 		ros::ServiceServer relax_joints_service;
@@ -93,6 +103,8 @@ class SSC32Driver
 
 		ros::Time current_time;
 		ros::Time last_time;
+
+		std::queue<Command> command_queue;
 
 		/*!
 		 * \brief Class that gives access to an XmlRpcValue's ValueStruct or ValueArray.

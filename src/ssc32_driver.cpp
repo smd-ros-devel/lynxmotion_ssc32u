@@ -187,6 +187,13 @@ SSC32Driver::~SSC32Driver( )
 		controllers.pop_back( );
 		delete controller;
 	}
+
+	while( !command_queue.empty( ) )
+	{
+		Command command = command_queue.front( );
+		command_queue.pop( );
+		delete[] command.cmd;
+	}
 }
 
 bool SSC32Driver::init( )
@@ -339,6 +346,8 @@ void SSC32Driver::update( )
 		publishJointStates( );
 	}
 
+	execute_command( );
+
 	last_time = current_time;
 }
 
@@ -410,55 +419,84 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 	}
 
 	int num_joints = controllers_map[topic]->joints.size( );
-	SSC32::ServoCommand *cmd = new SSC32::ServoCommand[num_joints];
 
-	bool invalid = false;
+	ros::Duration prev_time_from_start = ros::Duration( 0 );
 
-
-	for( unsigned int i = 0; i < msg->joint_names.size( ) && !invalid; i++ )
+	for( unsigned int i = 0; i < msg->points.size(); i++ )
 	{
-		if( joints_map.find( msg->joint_names[i] ) != joints_map.end( ) )
+		SSC32::ServoCommand *cmd = new SSC32::ServoCommand[num_joints];
+		bool invalid = false;
+
+		for( unsigned int j = 0; j < msg->joint_names.size( ) && !invalid; j++ )
 		{
-			Joint *joint = joints_map[msg->joint_names[i]];
-
-			double angle = msg->points[0].positions[i];
-
-			// Validate the commanded position (angle)
-			if( angle >= joint->properties.min_angle && angle <= joint->properties.max_angle )
+			if( joints_map.find( msg->joint_names[j] ) != joints_map.end( ) )
 			{
-				cmd[i].ch = joint->properties.channel;
-				cmd[i].pw = ( unsigned int )( scale * ( angle - joint->properties.offset_angle ) + 1500 + 0.5 );
-				if( joint->properties.invert )
-					cmd[i].pw = 3000 - cmd[i].pw;
-				if( cmd[i].pw < 500 )
-					cmd[i].pw = 500;
-				else if( cmd[i].pw > 2500 )
-					cmd[i].pw = 2500;
+				Joint *joint = joints_map[msg->joint_names[j]];
 
-				if( msg->points[0].velocities.size( ) >= i && msg->points[0].velocities[i] > 0 )
-					cmd[i].spd = scale * msg->points[0].velocities[i];
+				double angle = msg->points[i].positions[j];
+				if(joint->properties.invert)
+					angle *= -1.0;
+
+				// Validate the commanded position (angle)
+				if( angle >= joint->properties.min_angle && angle <= joint->properties.max_angle )
+				{
+					cmd[j].ch = joint->properties.channel;
+					cmd[j].pw = ( unsigned int )( scale * ( angle - joint->properties.offset_angle ) + 1500 + 0.5 );
+
+					if( cmd[j].pw < 500 )
+						cmd[j].pw = 500;
+					else if( cmd[j].pw > 2500 )
+						cmd[j].pw = 2500;
+
+					if( msg->points[i].velocities.size( ) >= j && msg->points[i].velocities[j] > 0 )
+						cmd[j].spd = scale * msg->points[i].velocities[j];
+				}
+				else // invalid angle given
+				{
+					invalid = true;
+					ROS_ERROR( "The given position [%f] for joint [%s] is invalid", angle, joint->name.c_str( ) );
+				}
 			}
-			else // invalid angle given
+			else
 			{
 				invalid = true;
-				ROS_ERROR( "The given position [%f] for joint [%s] is invalid", angle, joint->name.c_str( ) );
+				ROS_ERROR( "Joint [%s] does not exist", msg->joint_names[i].c_str( ) );
 			}
 		}
-		else
+
+		// Queue the command for execution
+		if(!invalid)
 		{
-			invalid = true;
-			ROS_ERROR( "Joint [%s] does not exist", msg->joint_names[i].c_str( ) );
+			Command command;
+			command.cmd = cmd;
+			command.num_joints = num_joints;
+			command.start_time = current_time + prev_time_from_start;
+			command.duration = msg->points[i].time_from_start - prev_time_from_start;
+
+			command_queue.push( command );
+		}
+		else
+			delete[] cmd;
+
+		prev_time_from_start = msg->points[i].time_from_start;
+	}
+}
+
+void SSC32Driver::execute_command( )
+{
+	if( !command_queue.empty( ) )
+	{
+		Command command = command_queue.front( );
+
+		if( command.start_time <= current_time )
+		{
+			if( !ssc32_dev.move_servo( command.cmd, command.num_joints, ( int )( command.duration.toSec() * 1000 + 0.5 ) ) )
+				ROS_ERROR( "Failed sending joint commands to controller" );
+
+			command_queue.pop( );
+			delete[] command.cmd;
 		}
 	}
-
-	if(!invalid)
-	{
-		// Send command
-		if( !ssc32_dev.move_servo( cmd, num_joints ) )
-			ROS_ERROR( "Failed sending joint commands to controller" );
-	}
-
-	delete[] cmd;
 }
 
 }
