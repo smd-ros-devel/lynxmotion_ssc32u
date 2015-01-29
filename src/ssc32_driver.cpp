@@ -188,11 +188,14 @@ SSC32Driver::~SSC32Driver( )
 		delete controller;
 	}
 
-	while( !command_queue.empty( ) )
+	for( std::map<std::string, std::queue<Command> >::iterator it = command_queues.begin( ); it != command_queues.end( ); it++ )
 	{
-		Command command = command_queue.front( );
-		command_queue.pop( );
-		delete[] command.cmd;
+		while( !command_queues[it->first].empty( ) )
+		{
+			Command command = command_queues[it->first].front( );
+			command_queues[it->first].pop( );
+			delete[] command.cmd;
+		}
 	}
 }
 
@@ -346,7 +349,8 @@ void SSC32Driver::update( )
 		publishJointStates( );
 	}
 
-	execute_command( );
+	for( std::map<std::string, std::queue<Command> >::iterator it = command_queues.begin( ); it != command_queues.end( ); it++ )
+		execute_command( it->first );
 
 	last_time = current_time;
 }
@@ -473,7 +477,8 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 			command.start_time = current_time + prev_time_from_start;
 			command.duration = msg->points[i].time_from_start - prev_time_from_start;
 
-			command_queue.push( command );
+			// Queue the command on the controller's command queue
+			command_queues[topic].push( command );
 		}
 		else
 			delete[] cmd;
@@ -482,18 +487,18 @@ void SSC32Driver::jointCallback( const ros::MessageEvent<trajectory_msgs::JointT
 	}
 }
 
-void SSC32Driver::execute_command( )
+void SSC32Driver::execute_command( std::string controller )
 {
-	if( !command_queue.empty( ) )
+	if( !command_queues[controller].empty( ) )
 	{
-		Command command = command_queue.front( );
+		Command command = command_queues[controller].front( );
 
 		if( command.start_time <= current_time )
 		{
 			if( !ssc32_dev.move_servo( command.cmd, command.num_joints, ( int )( command.duration.toSec() * 1000 + 0.5 ) ) )
 				ROS_ERROR( "Failed sending joint commands to controller" );
 
-			command_queue.pop( );
+			command_queues[controller].pop( );
 			delete[] command.cmd;
 		}
 	}

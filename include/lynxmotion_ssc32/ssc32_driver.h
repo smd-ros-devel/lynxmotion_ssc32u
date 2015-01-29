@@ -81,7 +81,7 @@ class SSC32Driver
 	private:
 		void publishJointStates( );
 		void jointCallback( const ros::MessageEvent<trajectory_msgs::JointTrajectory const>& event );
-		void execute_command( );
+		void execute_command( std::string );
 
 		ros::NodeHandle nh;
 		ros::ServiceServer relax_joints_service;
@@ -104,7 +104,7 @@ class SSC32Driver
 		ros::Time current_time;
 		ros::Time last_time;
 
-		std::queue<Command> command_queue;
+		std::map<std::string, std::queue<Command> > command_queues;
 
 		/*!
 		 * \brief Class that gives access to an XmlRpcValue's ValueStruct or ValueArray.
