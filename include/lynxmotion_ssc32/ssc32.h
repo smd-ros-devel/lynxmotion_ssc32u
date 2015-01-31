@@ -127,7 +127,7 @@ class SSC32
 		 */
 		bool send_message( const char *msg, int size );
 
-		int fd; // file description for the serial port
+		int fd; // file descriptor for the serial port
 		int first_instruction[32];
 };
 
