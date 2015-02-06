@@ -1,34 +1,7 @@
 #include <iostream>
 #include <string>
+#include <cstdlib>
 #include "lynxmotion_ssc32/ssc32.h"
-
-int atoi( const char *a, int n )
-{
-	int num = 0;
-	bool negate = false;
-	int i = 0;
-
-	if( n <= 0 )
-		return -1;
-
-	if( a[i] == '-' )
-	{
-		negate = true;
-		i++;
-	}
-
-	while( i < n )
-	{
-		num *= 10;
-		num += ( a[i] - '0' );
-		i++;
-	}
-
-	if( negate )
-		num *= -1;
-
-	return num;
-}
 
 int main( int argc, char **argv )
 {
@@ -89,16 +62,16 @@ int main( int argc, char **argv )
 		}
 
 		lynxmotion_ssc32::SSC32::ServoCommand cmd;
-		cmd.ch = atoi( argv[2], strlen( argv[2] ) );
-		cmd.pw = atoi( argv[3], strlen( argv[3] ) );
+		cmd.ch = atoi( argv[2] );
+		cmd.pw = atoi( argv[3] );
 
 		int time = -1;
 
 		if( argc > 4 )
-			cmd.spd = atoi( argv[4], strlen( argv[4] ) );
+			cmd.spd = atoi( argv[4] );
 
 		if( argc > 5 )
-			time = atoi( argv[5], strlen( argv[5] ) );
+			time = atoi( argv[5] );
 
 		if( !ssc32_device.open_port( port.c_str( ), baud ) )
 			return 1;
@@ -116,8 +89,8 @@ int main( int argc, char **argv )
 			return 1;
 		}
 
-		int ch = atoi( argv[2], strlen( argv[2] ) );
-		int offset = atoi( argv[3], strlen( argv[3] ) );
+		int ch = atoi( argv[2] );
+		int offset = atoi( argv[3] );
 
 		if( !ssc32_device.open_port( port.c_str( ), baud ) )
 			return 1;
@@ -145,7 +118,7 @@ int main( int argc, char **argv )
 			return 1;
 		}
 
-		int ch = atoi( argv[2], strlen( argv[2] ) );
+		int ch = atoi( argv[2] );
 		lynxmotion_ssc32::SSC32::LogicLevel level;
 
 		if( strcmp( argv[3], "0" ) == 0 )
