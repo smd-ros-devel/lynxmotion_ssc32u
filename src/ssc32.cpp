@@ -550,7 +550,7 @@ bool SSC32::read_analog_inputs( Inputs inputs[], float outputs[], unsigned int n
 	}
 
 	for( i = 0; i < n; i++ )
-		outputs[i] = 5.0 * buffer[i] / 255.0;
+		outputs[i] = 5.0 * buffer[i] / 256.0;
 
 	return true;
 }
