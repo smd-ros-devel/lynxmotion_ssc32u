@@ -424,26 +424,135 @@ int SSC32::query_pulse_width( unsigned int ch )
 	return ( 10 * ( int )buffer );
 }
 
-/*
-int[] SSC32::queryPulseWidth( int arg[] )
+bool SSC32::read_digital_inputs( Inputs inputs[], unsigned int outputs[], unsigned int n )
 {
+	unsigned char buffer[8];
+	int bytes_read = 0;
+	int total_bytes = 0;
+	char msg[255] = { 0 };
+	int i;
 
+	if ( n > 12 )
+	{
+		printf( "WARNING: reading digital inputs -- n must not be greater than 12\n" );
+		n = 12;
+	}
+
+	for( i = 0; i < n; i++ )
+	{
+		switch( inputs[i] )
+		{
+			case PinA:  strcat( msg, "A " );  break;
+			case PinAL: strcat( msg, "AL " ); break;
+			case PinB:  strcat( msg, "B " );  break;
+			case PinBL: strcat( msg, "BL " ); break;
+			case PinC:  strcat( msg, "C " );  break;
+			case PinCL: strcat( msg, "CL " ); break;
+			case PinD:  strcat( msg, "D " );  break;
+			case PinDL: strcat( msg, "DL " ); break;
+			case PinE:  strcat( msg, "E " );  break;
+			case PinEL: strcat( msg, "EL " ); break;
+			case PinF:  strcat( msg, "F " );  break;
+			case PinFL: strcat( msg, "FL " ); break;
+			default:
+#if DEBUG
+				printf( "WARNING: [read_digital_inputs] Unrecognized input value [%d]\n", inputs[i] );
+#endif
+				break;
+		}
+	}
+
+	strcat( msg, "\r" );
+
+	if( !send_message( msg, strlen( msg ) ) )
+        {
+#if DEBUG
+		printf( "ERROR: [read_digital_inputs] Failed to send message\n" );
+#endif
+		return false;
+        }
+
+	while( total_bytes != n )
+	{
+		if( ( bytes_read = read( fd, &buffer, 1 ) ) < 0 )
+		{
+#if DEBUG
+			printf( "ERROR: [read_digital_inputs] Failed to read from the device\n" );
+#endif
+			return false;
+		}
+
+		total_bytes += bytes_read;
+	}
+
+	for( i = 0; i < n; i++ )
+		outputs[i] = buffer[i] - '0';
+
+	return true;
 }
-*/
 
-/*
-int[] SSC32::readDigitalInputs( unsigned char inputs, unsigned char latches )
+bool SSC32::read_analog_inputs( Inputs inputs[], float outputs[], unsigned int n )
 {
+	unsigned char buffer[8];
+	int bytes_read = 0;
+	int total_bytes = 0;
+	char msg[255] = { 0 };
+	int i;
 
+	if( n > 8 )
+	{
+		printf( "WARNING: reading analog inputs -- n must not be greater than 8\n" );
+		n = 8;
+	}
+
+	for( i = 0; i < n; i++ )
+	{
+		switch( inputs[i] )
+		{
+			case PinA: strcat( msg, "VA " ); break;
+			case PinB: strcat( msg, "VB " ); break;
+			case PinC: strcat( msg, "VC " ); break;
+			case PinD: strcat( msg, "VD " ); break;
+			case PinE: strcat( msg, "VE " ); break;
+			case PinF: strcat( msg, "VF " ); break;
+			case PinG: strcat( msg, "VG " ); break;
+			case PinH: strcat( msg, "VH " ); break;
+			default:
+#if DEBUG
+				printf( "WARNING: [read_analog_inputs] Unrecognized input value [%d]\n", inputs[i] );
+#endif
+				break;
+		}
+	}
+
+	strcat( msg, "\r" );
+
+	if( !send_message( msg, strlen( msg ) ) )
+        {
+#if DEBUG
+		printf( "ERROR: [read_analog_inputs] Failed to send message\n" );
+#endif
+		return false;
+        }
+
+	while( total_bytes != n )
+	{
+		if( ( bytes_read = read( fd, &buffer, 1 ) ) < 0 )
+		{
+#if DEBUG
+			printf( "ERROR: [read_analog_inputs] Failed to read from the device\n" );
+#endif
+			return false;
+		}
+
+		total_bytes += bytes_read;
+	}
+
+	for( i = 0; i < n; i++ )
+		outputs[i] = 5.0 * buffer[i] / 255.0;
+
+	return true;
 }
-*/
-
-/*
-int[] SSC32::readAnalogInputs( unsigned char inputs )
-{
-
-}
-*/
 
 std::string SSC32::get_version( )
 {

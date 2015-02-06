@@ -49,12 +49,14 @@ int main( int argc, char **argv )
 		std::cout << "Usage: " << argv[0] << " COMMAND" << std::endl;
 		std::cout << std::endl;
 		std::cout << "Possible commands:" << std::endl;
-		std::cout << "  -c                     cancel the current command." << std::endl
-			  << "  -d CH LVL              send discrete output to channel CH. LVL must be 0 or 1." << std::endl
-			  << "  -m CH PW [S] [T]       move a servo on channel CH to the given pulse width PW." << std::endl
-			  << "  -o CH OFFSET           offsets channel CH by OFFSET amount." << std::endl
-			  << "  -s                     checks if any servos are currently moving" << std::endl
-			  << "  -v                     get the software version." << std::endl;
+		std::cout << "  -a                     Read inputs as analog." << std::endl
+			  << "  -c                     Cancel the current command." << std::endl
+			  << "  -d CH LVL              Send discrete output to channel CH. LVL must be 0 or 1." << std::endl
+			  << "  -i                     Read inputs as digital." << std::endl
+			  << "  -m CH PW [S] [T]       Move a servo on channel CH to the given pulse width PW." << std::endl
+			  << "  -o CH OFFSET           Offsets channel CH by OFFSET amount." << std::endl
+			  << "  -s                     Checks if any servos are currently moving" << std::endl
+			  << "  -v                     Get the software version." << std::endl;
 	}
 	else if( strcmp( argv[1], "-v" ) == 0 )
 	{
@@ -163,6 +165,44 @@ int main( int argc, char **argv )
 
 		if( !ssc32_device.discrete_output( ch, level ) )
 			return 1;
+	}
+	else if( strcmp( argv[1], "-a" ) == 0 )
+	{
+		lynxmotion_ssc32::SSC32::Inputs inputs[4];
+		float data[4];
+
+		inputs[0] = lynxmotion_ssc32::SSC32::PinA;
+		inputs[1] = lynxmotion_ssc32::SSC32::PinB;
+		inputs[2] = lynxmotion_ssc32::SSC32::PinC;
+		inputs[3] = lynxmotion_ssc32::SSC32::PinD;
+
+		if( !ssc32_device.open_port( port.c_str( ), baud ) )
+			return 1;
+
+		if( !ssc32_device.read_analog_inputs( inputs, data, 4 ) )
+			return 1;
+
+		for( int i = 0; i < 4; i++ )
+			std::cout << "Pin " << ( ( char )i + 'A' ) << ": " << data[i] << std::endl;
+	}
+	else if( strcmp( argv[1], "-i" ) == 0 )
+	{
+		lynxmotion_ssc32::SSC32::Inputs inputs[4];
+		unsigned int data[4];
+
+		inputs[0] = lynxmotion_ssc32::SSC32::PinA;
+		inputs[1] = lynxmotion_ssc32::SSC32::PinB;
+		inputs[2] = lynxmotion_ssc32::SSC32::PinC;
+		inputs[3] = lynxmotion_ssc32::SSC32::PinD;
+
+		if( !ssc32_device.open_port( port.c_str( ), baud ) )
+			return 1;
+
+		if( !ssc32_device.read_digital_inputs( inputs, data, 4 ) )
+			return 1;
+
+		for( int i = 0; i < 4; i++ )
+			std::cout << "Pin " << ( ( char )i + 'A' ) << ": " << data[i] << std::endl;
 	}
 	else
 	{

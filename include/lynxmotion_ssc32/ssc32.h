@@ -91,28 +91,27 @@ class SSC32
 		 */
 		int query_pulse_width( unsigned int ch );
 
-		/*!
-		 * \brief Queries multiple servos for their pulse width.
-		 *
-		 * \param arg[] Servos to query.
-		 *
-		 * \returns The pulse widths (500-2500) of each servo.
-		 */
-		//bool queryPulseWidth( int arg[] );
-
-		/*
-		static enum Inputs
+		enum Inputs
 		{
-			PinA = 0x00,
-			PinB = 0x01,
-			PinC = 0x02,
-			PinD = 0x04
+			PinA,
+			PinAL,
+			PinB,
+			PinBL,
+			PinC,
+			PinCL,
+			PinD,
+			PinDL,
+                        PinE,  // SSC-32U only
+			PinEL, // SSC-32U only
+			PinF,  // SSC-32U only
+			PinFL, // SSC-32U only
+			PinG,  // SSC-32U only
+			PinH,  // SSC-32U only
 		};
-		*/
 
-		//int[] readDigitalInputs( unsigned char inputs, unsigned char latches );
+		bool read_digital_inputs( Inputs inputs[], unsigned int outputs[], unsigned int n );
 
-		//int[] readAnalogInputs( unsigned char inputs );
+		bool read_analog_inputs( Inputs inputs[], float outputs[], unsigned int n );
 
 		std::string get_version( );
 
