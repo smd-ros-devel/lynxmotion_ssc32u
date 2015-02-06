@@ -432,10 +432,11 @@ bool SSC32::read_digital_inputs( Inputs inputs[], unsigned int outputs[], unsign
 	char msg[255] = { 0 };
 	int i;
 
-	if ( n > 12 )
+	// SSC-32U documentation states that only up to 8 values can be read at once
+	if ( n > 8 )
 	{
-		printf( "WARNING: reading digital inputs -- n must not be greater than 12\n" );
-		n = 12;
+		printf( "WARNING: reading digital inputs -- n must not be greater than 8\n" );
+		n = 8;
 	}
 
 	for( i = 0; i < n; i++ )
