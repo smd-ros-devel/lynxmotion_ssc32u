@@ -148,6 +148,27 @@ bool SSC32::send_message( const char *msg, int size )
 	return true;
 }
 
+unsigned int SSC32::recv_message( unsigned char *buf, unsigned int size )
+{
+	int bytes_read;
+	int total_bytes = 0;
+
+	while( total_bytes != size )
+	{
+		if( ( bytes_read = read( fd, buf + total_bytes, 1 ) ) < 0 )
+		{
+#if DEBUG
+			printf( "ERROR: [recv_message] Failed to read from device\n" );
+#endif
+			return total_bytes;
+		}
+
+		total_bytes += bytes_read;
+	}
+
+	return total_bytes;
+}
+
 bool SSC32::move_servo( struct ServoCommand cmd, int time )
 {
 	return move_servo( &cmd, 1, time );
@@ -349,7 +370,7 @@ bool SSC32::byte_output( unsigned int bank, unsigned int value )
 bool SSC32::query_movement_status( )
 {
 	unsigned char buffer;
-	int bytes_read = 0;
+	//int bytes_read = 0;
 	const char *msg = "Q \r";
 
 	if( !send_message( msg, strlen( msg ) ) )
@@ -364,15 +385,12 @@ bool SSC32::query_movement_status( )
 	usleep( 10000 );
 
 	// Continue reading from controller until a response is received
-	while( bytes_read != 1 )
+	if( recv_message( &buffer, 1 ) != 1 )
 	{
-		if( ( bytes_read = read( fd, &buffer, 1 ) ) < 0 )
-		{
 #if DEBUG
-			printf( "ERROR: [query_movement_status] Failed to read from the device\n" );
+		printf( "ERROR: [query_movement_status] Failed to receive message\n" );
 #endif
-			return false;
-		}
+		return false;
 	}
 
 	// Check response value
@@ -410,15 +428,12 @@ int SSC32::query_pulse_width( unsigned int ch )
 	// It can take up to 5ms before the controller responds, so sleep for 5ms.
 	usleep( 5000 );
 
-	while( bytes_read != 1 )
+	if( recv_message( &buffer, 1 ) != 1 )
 	{
-		if( ( bytes_read = read( fd, &buffer, 1 ) ) < 0 )
-		{
 #if DEBUG
-			printf( "ERROR: [query_pulse_width] Failed to read from the device\n" );
+		printf( "ERROR: [query_pulse_width] Failed to receive message\n" );
 #endif
-			return -1;
-		}
+		return false;
 	}
 
 	return ( 10 * ( int )buffer );
@@ -473,17 +488,12 @@ bool SSC32::read_digital_inputs( Inputs inputs[], unsigned int outputs[], unsign
 		return false;
         }
 
-	while( total_bytes != n )
+	if( recv_message( buffer, n ) != n )
 	{
-		if( ( bytes_read = read( fd, &buffer, 1 ) ) < 0 )
-		{
 #if DEBUG
-			printf( "ERROR: [read_digital_inputs] Failed to read from the device\n" );
+		printf( "ERROR: [read_digital_inputs] Failed to receive message\n" );
 #endif
-			return false;
-		}
-
-		total_bytes += bytes_read;
+		return false;
 	}
 
 	for( i = 0; i < n; i++ )
@@ -536,17 +546,12 @@ bool SSC32::read_analog_inputs( Inputs inputs[], float outputs[], unsigned int n
 		return false;
         }
 
-	while( total_bytes != n )
+	if( recv_message( buffer, n ) != n )
 	{
-		if( ( bytes_read = read( fd, &buffer, 1 ) ) < 0 )
-		{
 #if DEBUG
-			printf( "ERROR: [read_analog_inputs] Failed to read from the device\n" );
+		printf( "ERROR: [read_analog_inputs] Failed to receive message\n" );
 #endif
-			return false;
-		}
-
-		total_bytes += bytes_read;
+		return false;
 	}
 
 	for( i = 0; i < n; i++ )
