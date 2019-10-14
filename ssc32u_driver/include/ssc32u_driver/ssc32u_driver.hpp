@@ -3,6 +3,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "ssc32.hpp"
 
 namespace ssc32u_driver
 {
@@ -26,6 +27,9 @@ public:
 
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
   on_shutdown(const rclcpp_lifecycle::State &);
+
+private:
+  SSC32 ssc32_;
 };
 
 }  // namespace ssc32u_driver

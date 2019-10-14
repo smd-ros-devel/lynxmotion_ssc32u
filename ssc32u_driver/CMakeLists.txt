@@ -30,8 +30,11 @@ include_directories(include)
 # create ament index resource which references the libraries in the binary dir
 set(node_plugins "")
 
+add_library(ssc32 SHARED src/ssc32.cpp)
+
 add_library(ssc32u_driver SHARED
   src/ssc32u_driver.cpp)
+target_link_libraries(ssc32u_driver ssc32)
 target_compile_definitions(ssc32u_driver
   PRIVATE "SSC32U_BUILDING_DLL")
 ament_target_dependencies(ssc32u_driver
