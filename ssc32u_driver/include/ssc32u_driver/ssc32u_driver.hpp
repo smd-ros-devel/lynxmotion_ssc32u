@@ -7,6 +7,8 @@
 #include "ssc32u_msgs/msg/servo_command_group.hpp"
 #include "ssc32u_msgs/msg/discrete_output.hpp"
 #include "ssc32u_msgs/srv/query_pulse_width.hpp"
+#include "ssc32u_msgs/msg/pulse_width.hpp"
+#include "ssc32u_msgs/msg/pulse_widths.hpp"
 
 namespace ssc32u_driver
 {
@@ -37,8 +39,15 @@ private:
   rclcpp::Subscription<ssc32u_msgs::msg::DiscreteOutput>::SharedPtr discrete_output_sub_;
   rclcpp::Service<ssc32u_msgs::srv::QueryPulseWidth>::SharedPtr query_pw_srv_;
 
+  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<ssc32u_msgs::msg::PulseWidths>> pw_pub_;
+  std::shared_ptr<rclcpp::TimerBase> pw_timer_;
+
+  bool publish_pulse_width_;
+  int publish_rate_;
+
   void command_received(const ssc32u_msgs::msg::ServoCommandGroup::SharedPtr msg);
   void discrete_output(const ssc32u_msgs::msg::DiscreteOutput::SharedPtr msg);
+  void publish_pulse_widths();
 
   void query_pulse_width(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<ssc32u_msgs::srv::QueryPulseWidth::Request> request,

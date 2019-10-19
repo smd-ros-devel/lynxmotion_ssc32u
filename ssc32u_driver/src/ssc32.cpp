@@ -425,8 +425,8 @@ int SSC32::query_pulse_width(unsigned int ch)
                 return false;
         }
 
-  // It can take up to 5ms before the controller responds, so sleep for 5ms.
-  usleep(5000);
+  // Give time for the controller to respond
+  usleep(1000);
 
   if(recv_message(&buffer, 1) != 1)
   {

@@ -22,6 +22,8 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(ssc32u_msgs
   "msg/DiscreteOutput.msg"
+  "msg/PulseWidth.msg"
+  "msg/PulseWidths.msg"
   "msg/ServoCommand.msg"
   "msg/ServoCommandGroup.msg"
   "srv/QueryPulseWidth.srv"
