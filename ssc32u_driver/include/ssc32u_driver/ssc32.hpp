@@ -39,7 +39,6 @@
 #include <math.h>
 #include <string>
 #include <sstream>
-#include <cstdio>
 
 namespace ssc32u_driver
 {
@@ -157,6 +156,8 @@ private:
   bool send_message(const char *msg, int size);
 
   unsigned int recv_message(unsigned char *buf, unsigned int size);
+
+  void log(const char *msg, ...);
 
   int fd; // file descriptor for the serial port
   int first_instruction[32];

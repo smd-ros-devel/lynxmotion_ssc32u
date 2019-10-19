@@ -30,6 +30,9 @@
 
 #include "ssc32u_driver/ssc32.hpp"
 
+#include <stdio.h>
+#include <stdarg.h>
+
 #ifndef DEBUG
 #define DEBUG 0
 #endif
@@ -42,8 +45,9 @@ SSC32::SSC32()
 : fd(-1)
 {
   unsigned int i;
-  for(i = 0; i < SSC32::MAX_CHANNELS; i++)
+  for (i = 0; i < SSC32::MAX_CHANNELS; i++) {
     first_instruction[i] = 0;
+  }
 }
 
 //Destructor
@@ -58,8 +62,7 @@ bool SSC32::open_port(const char *port, int baud)
 
   close_port();
 
-  switch(baud)
-  {
+  switch (baud) {
     case 2400:
       baud = B2400;
       break;
@@ -79,14 +82,12 @@ bool SSC32::open_port(const char *port, int baud)
 
   fd = open(port, O_RDWR | O_NOCTTY);
 
-  if(fd < 0)
-  {
+  if (fd < 0) {
     printf("ERROR: Unable to open device on port %s\n", port);
     return false;
   }
 
-  if(fcntl(fd, F_SETFL, 0) < 0)
-  {
+  if (fcntl(fd, F_SETFL, 0) < 0) {
     printf("ERROR: port [%s] is already locked\n", port);
     close_port();
     return false;
@@ -101,8 +102,7 @@ bool SSC32::open_port(const char *port, int baud)
   options.c_cflag |= CREAD | CS8 | CLOCAL;
   options.c_lflag = 0;
 
-  if(tcsetattr(fd, TCSANOW, &options) < 0)
-  {
+  if (tcsetattr(fd, TCSANOW, &options) < 0) {
     printf("ERROR: setting termios options\n");
     close_port();
     return false;
@@ -125,53 +125,44 @@ void SSC32::close_port()
 {
   unsigned int i;
 
-  if(fd != -1)
-  {
+  if (fd != -1) {
     printf("Closing port\n");
 
     close(fd);
 
     fd = -1;
 
-    for(i = 0; i < SSC32::MAX_CHANNELS; i++)
+    for (i = 0; i < SSC32::MAX_CHANNELS; i++) {
       first_instruction[i] = 0;
+    }
   }
 }
 
 bool SSC32::send_message(const char *msg, int size)
 {
-  if(fd != -1)
-  {
+  if (fd != -1) {
     tcflush(fd, TCIOFLUSH);
 
 #if DEBUG
     printf("INFO: [send_message] Sending message: ");
-    for(unsigned int i = 0; i < strlen(msg); i++)
-    {
-      if(msg[i] == '\r')
+    for (unsigned int i = 0; i < strlen(msg); i++) {
+      if (msg[i] == '\r') {
         printf("<cr>");
-      else if(msg[i] == 27)
+      } else if (msg[i] == 27) {
         printf("<esc>");
-      else
+      } else {
         printf("%c", msg[i]);
+      }
     }
     printf("\n");
 #endif
 
-    if(write(fd, msg, size) < 0)
-    {
-#if DEBUG
-      printf("ERROR: [send_message] Failed to write to device\n");
-#endif
+    if (write(fd, msg, size) < 0) {
+      log("ERROR: [send_message] Failed to write to device\n");
       return false;
     }
-
-  }
-  else
-  {
-#if DEBUG
-    printf("ERROR: [send_message] Device is not open\n");
-#endif
+  } else {
+    log("ERROR: [send_message] Device is not open\n");
     return false;
   }
 
@@ -183,13 +174,9 @@ unsigned int SSC32::recv_message(unsigned char *buf, unsigned int size)
   int bytes_read;
   int total_bytes = 0;
 
-  while(total_bytes != size)
-  {
-    if((bytes_read = read(fd, buf + total_bytes, 1)) < 0)
-    {
-#if DEBUG
-      printf("ERROR: [recv_message] Failed to read from device\n");
-#endif
+  while (total_bytes != size) {
+    if ((bytes_read = read(fd, buf + total_bytes, 1)) < 0) {
+      log("ERROR: [recv_message] Failed to read from device\n");
       return total_bytes;
     }
 
@@ -214,29 +201,19 @@ bool SSC32::move_servo(struct ServoCommand cmd[], unsigned int n, int time)
 
   time_flag = 0;
 
-  if(n > SSC32::MAX_CHANNELS)
-  {
-#if DEBUG
-    printf("ERROR: [move_servo] Invalid number of channels [%u]\n", n);
-#endif
+  if (n > SSC32::MAX_CHANNELS) {
+    log("ERROR: [move_servo] Invalid number of channels [%u]\n", n);
     return false;
   }
 
-  for(i = 0; i < n; i++)
-  {
-    if(cmd[i].ch > 31)
-    {
-#if DEBUG
-      printf("ERROR: [move_servo] Invalid channel [%u]\n", cmd[i].ch);
-#endif
+  for (i = 0; i < n; i++) {
+    if (cmd[i].ch > 31) {
+      log("ERROR: [move_servo] Invalid channel [%u]\n", cmd[i].ch);
       return false;
     }
 
-    if(cmd[i].pw < SSC32::MIN_PULSE_WIDTH || cmd[i].pw > SSC32::MAX_PULSE_WIDTH)
-    {
-#if DEBUG
-      printf("ERROR: [move_servo] Invalid pulse width [%u]\n", cmd[i].pw);
-#endif
+    if (cmd[i].pw < SSC32::MIN_PULSE_WIDTH || cmd[i].pw > SSC32::MAX_PULSE_WIDTH) {
+      log("ERROR: [move_servo] Invalid pulse width [%u]\n", cmd[i].pw);
       return false;
     }
 
@@ -245,22 +222,19 @@ bool SSC32::move_servo(struct ServoCommand cmd[], unsigned int n, int time)
 
     strcat(msg, temp);
 
-    if(first_instruction[cmd[i].ch] != 0)
-    {
-      if(cmd[i].spd > 0)
-      {
+    if (first_instruction[cmd[i].ch] != 0) {
+      if (cmd[i].spd > 0) {
         sprintf(temp, "S%d ", cmd[i].spd);
         strcat(msg, temp);
       }
-    }
-    else // this is the first instruction for this channel
+    } else { // this is the first instruction for this channel
       time_flag++;
+    }
   }
 
   // If time_flag is 0, then this is not the first instruction
   // for any channels to move the servo
-  if(time_flag == 0 && time > 0)
-  {
+  if (time_flag == 0 && time > 0) {
     sprintf(temp, "T%d ", time);
     strcat(msg, temp);
   }
@@ -271,9 +245,11 @@ bool SSC32::move_servo(struct ServoCommand cmd[], unsigned int n, int time)
 
   // If the command was success, then the channels commanded
   // are not on their first instuction anymore.
-  if(result)
-    for(i = 0; i < n; i++)
+  if (result) {
+    for (i = 0; i < n; i++) {
       first_instruction[cmd[i].ch] = 1;
+    }
+  }
 
   return result;
 }
@@ -297,29 +273,19 @@ bool SSC32::pulse_offset(unsigned int ch[], int value[], unsigned int n)
   char temp[12];
   unsigned int i;
 
-  if(n > SSC32::MAX_CHANNELS)
-  {
-#if DEBUG
-    printf("ERROR: [pulse_offset] Invalid number of channels [%u]\n", n);
-#endif
+  if (n > SSC32::MAX_CHANNELS) {
+    log("ERROR: [pulse_offset] Invalid number of channels [%u]\n", n);
     return false;
   }
 
-  for(i = 0; i < n; i++)
-  {
-    if(ch[i] > 31)
-    {
-#if DEBUG
-      printf("ERROR: [pulse_offset] Invalid channel [%u]\n", ch[i]);
-#endif
+  for (i = 0; i < n; i++) {
+    if (ch[i] > 31) {
+      log("ERROR: [pulse_offset] Invalid channel [%u]\n", ch[i]);
       return false;
     }
 
-    if(value[i] < -100 || value[i] > 100)
-    {
-#if DEBUG
-      printf("ERROR: [pulse_offset] Invalid offset value [%d]\n", value[i]);
-#endif
+    if (value[i] < -100 || value[i] > 100) {
+      log("ERROR: [pulse_offset] Invalid offset value [%d]\n", value[i]);
       return false;
     }
 
@@ -344,21 +310,14 @@ bool SSC32::discrete_output(unsigned int ch[], LogicLevel lvl[], unsigned int n)
   char temp[7];
   unsigned int i;
 
-  if(n > SSC32::MAX_CHANNELS)
-  {
-#if DEBUG
-    printf("ERROR: [discrete_output] Invalid number of channels [%u]\n", n);
-#endif
+  if (n > SSC32::MAX_CHANNELS) {
+    log("ERROR: [discrete_output] Invalid number of channels [%u]\n", n);
     return false;
   }
 
-  for(i = 0; i < n; i++)
-  {
-    if(ch[i] > 31)
-    {
-#if DEBUG
-      printf("ERROR: [discrete_output] Invalid servo channel [%u]\n", ch[i]);
-#endif
+  for (i = 0; i < n; i++) {
+    if (ch[i] > 31) {
+      log("ERROR: [discrete_output] Invalid servo channel [%u]\n", ch[i]);
       return false;
     }
 
@@ -376,19 +335,13 @@ bool SSC32::byte_output(unsigned int bank, unsigned int value)
 {
   char msg[10];
 
-  if(bank > 3)
-  {
-#if DEBUG
-    printf("ERROR: [byte_output] Invalid bank [%u]\n", bank);
-#endif
+  if (bank > 3) {
+    log("ERROR: [byte_output] Invalid bank [%u]\n", bank);
     return false;
   }
 
-  if(value > 255)
-  {
-#if DEBUG
-    printf("ERROR: [byte_output] Invalid value [%u]\n", value);
-#endif
+  if (value > 255) {
+    log("ERROR: [byte_output] Invalid value [%u]\n", value);
     return false;
   }
 
@@ -403,11 +356,8 @@ bool SSC32::query_movement_status()
   //int bytes_read = 0;
   const char *msg = "Q \r";
 
-  if(!send_message(msg, strlen(msg)))
-  {
-#if DEBUG
-    printf("ERROR: [query_movement_status] Failed to send message\n");
-#endif
+  if (!send_message(msg, strlen(msg))) {
+    log("ERROR: [query_movement_status] Failed to send message\n");
     return false;
   }
 
@@ -415,17 +365,15 @@ bool SSC32::query_movement_status()
   usleep(10000);
 
   // Continue reading from controller until a response is received
-  if(recv_message(&buffer, 1) != 1)
-  {
-#if DEBUG
-    printf("ERROR: [query_movement_status] Failed to receive message\n");
-#endif
+  if (recv_message(&buffer, 1) != 1) {
+    log("ERROR: [query_movement_status] Failed to receive message\n");
     return false;
   }
 
   // Check response value
-  if(buffer == '+')
+  if (buffer == '+') {
     return true;
+  }
 
   return false;
 }
@@ -437,32 +385,23 @@ int SSC32::query_pulse_width(unsigned int ch)
   char msg[7];
 
   // Check if the servo channel is valid
-  if(ch > 31)
-  {
-#if DEBUG
-    printf("ERROR: [query_pulse_width] Invalid servo channel [%u]\n", ch);
-#endif
+  if (ch > 31) {
+    log("ERROR: [query_pulse_width] Invalid servo channel [%u]\n", ch);
     return false;
   }
 
   sprintf(msg, "QP%d \r", ch);
 
-  if(!send_message(msg, strlen(msg)))
-        {
-#if DEBUG
-                printf("ERROR: [query_pulse_width] Failed to send message\n");
-#endif
-                return false;
-        }
+  if (!send_message(msg, strlen(msg))) {
+    log("ERROR: [query_pulse_width] Failed to send message\n");
+    return false;
+  }
 
   // Give time for the controller to respond
   usleep(1000);
 
-  if(recv_message(&buffer, 1) != 1)
-  {
-#if DEBUG
-    printf("ERROR: [query_pulse_width] Failed to receive message\n");
-#endif
+  if (recv_message(&buffer, 1) != 1) {
+    log("ERROR: [query_pulse_width] Failed to receive message\n");
     return false;
   }
 
@@ -478,16 +417,13 @@ bool SSC32::read_digital_inputs(Inputs inputs[], unsigned int outputs[], unsigne
   int i;
 
   // SSC-32U documentation states that only up to 8 values can be read at once
-  if (n > 8)
-  {
-    printf("WARNING: reading digital inputs -- n must not be greater than 8\n");
+  if (n > 8) {
+    log("WARNING: reading digital inputs -- n must not be greater than 8\n");
     n = 8;
   }
 
-  for(i = 0; i < n; i++)
-  {
-    switch(inputs[i])
-    {
+  for (i = 0; i < n; i++) {
+    switch (inputs[i]) {
       case PinA:  strcat(msg, "A ");  break;
       case PinAL: strcat(msg, "AL "); break;
       case PinB:  strcat(msg, "B ");  break;
@@ -501,33 +437,26 @@ bool SSC32::read_digital_inputs(Inputs inputs[], unsigned int outputs[], unsigne
       case PinF:  strcat(msg, "F ");  break;
       case PinFL: strcat(msg, "FL "); break;
       default:
-#if DEBUG
-        printf("WARNING: [read_digital_inputs] Unrecognized input value [%d]\n", inputs[i]);
-#endif
+        log("WARNING: [read_digital_inputs] Unrecognized input value [%d]\n", inputs[i]);
         break;
     }
   }
 
   strcat(msg, "\r");
 
-  if(!send_message(msg, strlen(msg)))
-        {
-#if DEBUG
-    printf("ERROR: [read_digital_inputs] Failed to send message\n");
-#endif
-    return false;
-        }
-
-  if(recv_message(buffer, n) != n)
-  {
-#if DEBUG
-    printf("ERROR: [read_digital_inputs] Failed to receive message\n");
-#endif
+  if (!send_message(msg, strlen(msg))) {
+    log("ERROR: [read_digital_inputs] Failed to send message\n");
     return false;
   }
 
-  for(i = 0; i < n; i++)
+  if (recv_message(buffer, n) != n) {
+    log("ERROR: [read_digital_inputs] Failed to receive message\n");
+    return false;
+  }
+
+  for (i = 0; i < n; i++) {
     outputs[i] = buffer[i] - '0';
+  }
 
   return true;
 }
@@ -540,16 +469,13 @@ bool SSC32::read_analog_inputs(Inputs inputs[], float outputs[], unsigned int n)
   char msg[255] = { 0 };
   int i;
 
-  if(n > 8)
-  {
-    printf("WARNING: reading analog inputs -- n must not be greater than 8\n");
+  if (n > 8) {
+    log("WARNING: reading analog inputs -- n must not be greater than 8\n");
     n = 8;
   }
 
-  for(i = 0; i < n; i++)
-  {
-    switch(inputs[i])
-    {
+  for (i = 0; i < n; i++) {
+    switch (inputs[i]) {
       case PinA: strcat(msg, "VA "); break;
       case PinB: strcat(msg, "VB "); break;
       case PinC: strcat(msg, "VC "); break;
@@ -559,33 +485,26 @@ bool SSC32::read_analog_inputs(Inputs inputs[], float outputs[], unsigned int n)
       case PinG: strcat(msg, "VG "); break;
       case PinH: strcat(msg, "VH "); break;
       default:
-#if DEBUG
-        printf("WARNING: [read_analog_inputs] Unrecognized input value [%d]\n", inputs[i]);
-#endif
+        log("WARNING: [read_analog_inputs] Unrecognized input value [%d]\n", inputs[i]);
         break;
     }
   }
 
   strcat(msg, "\r");
 
-  if(!send_message(msg, strlen(msg)))
-        {
-#if DEBUG
-    printf("ERROR: [read_analog_inputs] Failed to send message\n");
-#endif
-    return false;
-        }
-
-  if(recv_message(buffer, n) != n)
-  {
-#if DEBUG
-    printf("ERROR: [read_analog_inputs] Failed to receive message\n");
-#endif
+  if (!send_message(msg, strlen(msg))) {
+    log("ERROR: [read_analog_inputs] Failed to send message\n");
     return false;
   }
 
-  for(i = 0; i < n; i++)
+  if (recv_message(buffer, n) != n) {
+    log("ERROR: [read_analog_inputs] Failed to receive message\n");
+    return false;
+  }
+
+  for (i = 0; i < n; i++) {
     outputs[i] = 5.0 * buffer[i] / 256.0;
+  }
 
   return true;
 }
@@ -601,74 +520,68 @@ std::string SSC32::get_version()
 
   total_bytes = 0;
 
-  if(!send_message(msg, strlen(msg)))
-  {
-#if DEBUG
-    printf("ERROR: [get_version] Failed to send message\n");
-#endif
+  if (!send_message(msg, strlen(msg))) {
+    log("ERROR: [get_version] Failed to send message\n");
     return "error";
   }
 
   usleep(100000);
 
-#if DEBUG
-  printf("INFO: [get_version] Reading response\n");
-#endif
+  log("INFO: [get_version] Reading response\n");
 
-  while((bytes_read = read(fd, data + total_bytes, 1)) > 0)
+  while ((bytes_read = read(fd, data + total_bytes, 1)) > 0) {
     total_bytes += bytes_read;
+  }
 
 #if DEBUG
   printf("INFO: [get_version] Data: ");
-  for(i = 0; i < total_bytes; i++)
-  {
-    if(data[i] == '\r')
+  for (i = 0; i < total_bytes; i++) {
+    if (data[i] == '\r') {
       printf("<cr>");
-    else if(data[i] == '\n')
+    } else if (data[i] == '\n') {
       printf("<nl>");
-    else
+    } else {
       printf("%c", data[i]);
+    }
   }
   printf("\n");
 #endif
 
-  if(bytes_read < 0)
-  {
-#if DEBUG
-    printf("ERROR: [get_version] Failed to read from device\n");
-#endif
-  }
-  else if(total_bytes > 0)
-  {
-#if DEBUG
-    printf("Read %d bytes\n", total_bytes);
-#endif
+  if (bytes_read < 0) {
+    log("ERROR: [get_version] Failed to read from device\n");
+  } else if (total_bytes > 0) {
+    log("Read %d bytes\n", total_bytes);
 
-    if(data[total_bytes - 1] == '\r')
+    if (data[total_bytes - 1] == '\r') {
       data[total_bytes - 1] = '\0';
-    else
-    {
-#if DEBUG
-      printf("WARNING: [get_version] Timeout while reading\n");
-#endif
+    } else {
+      log("WARNING: [get_version] Timeout while reading\n");
+
       data[total_bytes] = '\0';
     }
 
     i = total_bytes - 2;
 
-    while(i >= 0 && data[i] != '\r')
+    while (i >= 0 && data[i] != '\r') {
       i--;
+    }
 
     version = data + i + 1;
-  }
-  else
-  {
-#if DEBUG
-    printf("WARNING: [get_version] Timeout while reading\n");
-#endif
+  } else {
+    log("WARNING: [get_version] Timeout while reading\n");
   }
 
   return version;
+}
+
+void SSC32::log(const char* msg, ...)
+{
+#if DEBUG
+  va_list args;
+  va_start(args, format);
+  vprintf(format, args);
+  va_end(args);
+#endif
 }
 
 }  // namespace ssc32u_driver
