@@ -17,9 +17,45 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
+find_package(ssc32u_msgs REQUIRED)
+
+include_directories(include)
+
+# create ament index resource which references the libraries in the binary dir
+set(node_plugins "")
+
+add_library(servo_controller SHARED
+  src/servo_controller.cpp)
+target_compile_definitions(servo_controller
+  PRIVATE "SSC32U_BUILDING_DLL")
+ament_target_dependencies(servo_controller
+  "rclcpp"
+  "rclcpp_components"
+  "std_srvs"
+  "sensor_msgs"
+  "trajectory_msgs"
+  "ssc32u_msgs")
+rclcpp_components_register_nodes(servo_controller "ssc32u_controllers::ServoController")
+set(node_plugins "${node_plugins}ssc32u_controllers::ServoController;$<TARGET_FILE:servo_controller>\n")
+
+add_executable(servo_controller_node
+  src/servo_controller_node.cpp
+)
+target_link_libraries(servo_controller_node
+  servo_controller
+)
+
+install(TARGETS
+  servo_controller
+  servo_controller_node
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

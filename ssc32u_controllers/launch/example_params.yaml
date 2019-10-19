@@ -1,0 +1,45 @@
+ssc32u_servo_controller:
+  ros__parameters:
+    publish_joint_states: true
+    publish_rate: 5
+    joints:
+      joint_1:
+        channel: 0
+        max_angle: 1.57
+        min_angle: -1.57
+        offset_angle: 0.0
+        default_angle: 0.0
+        initialize: true
+        invert: false
+      joint_2:
+        channel: 1
+        max_angle: 1.57
+        min_angle: -1.57
+        offset_angle: 0.0
+        default_angle: 0.0
+        initialize: true
+        invert: false
+      joint_3:
+        channel: 2
+        max_angle: 1.57
+        min_angle: -1.57
+        offset_angle: 0.0
+        default_angle: 0.0
+        initialize: true
+        invert: false
+      joint_4:
+        channel: 3
+        max_angle: 1.57
+        min_angle: -1.57
+        offset_angle: 0.0
+        default_angle: 0.0
+        initialize: true
+        invert: false
+      joint_5:
+        channel: 4
+        max_angle: 1.57
+        min_angle: -1.57
+        offset_angle: 0.0
+        default_angle: 0.0
+        initialize: true
+        invert: false
