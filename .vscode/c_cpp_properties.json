@@ -3,8 +3,9 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/ssc32u_driver/include/**",
-                "/opt/ros/dashing/include/**"
+                "/opt/ros/dashing/include",
+                "${workspaceFolder}/ssc32u_controllers/include",
+                "${workspaceFolder}/ssc32u_driver/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
