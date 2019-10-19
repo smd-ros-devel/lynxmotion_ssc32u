@@ -50,7 +50,7 @@ SSC32UDriver::SSC32UDriver(const rclcpp::NodeOptions & options)
 {
   declare_parameter<std::string>("port", "/dev/ttyUSB0");
   declare_parameter<int>("baud", 115200); // TODO: Switch back to 9600 as default, but recommend using 115200
-  declare_parameter<bool>("publish_pulse_width", true);
+  declare_parameter<bool>("publish_pulse_width", false);
   declare_parameter<int>("publish_rate", 10); // TODO: Document that you shouldn't go higher than 10hz
 }
 
