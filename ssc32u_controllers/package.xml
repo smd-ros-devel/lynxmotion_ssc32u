@@ -8,8 +8,8 @@
 
   <license>BSD</license>
 
-  <url type="bugtracker">https://github.com/smd-ros-devel/lynxmotion_ssc32</url>
-  <url type="repository">https://github.com/smd-ros-devel/lynxmotion_ssc32/issues</url>
+  <url type="repository">https://github.com/smd-ros-devel/lynxmotion_ssc32</url>
+  <url type="bugtracker">https://github.com/smd-ros-devel/lynxmotion_ssc32/issues</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
