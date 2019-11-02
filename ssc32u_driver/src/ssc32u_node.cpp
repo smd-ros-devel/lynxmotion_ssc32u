@@ -28,47 +28,20 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef SSC32U_DRIVER__SSC32U_DRIVER_HPP_
-#define SSC32U_DRIVER__SSC32U_DRIVER_HPP_
+#include <memory>
 
 #include "rclcpp/rclcpp.hpp"
-#include "ssc32.hpp"
-#include "ssc32u_msgs/msg/servo_command_group.hpp"
-#include "ssc32u_msgs/msg/discrete_output.hpp"
-#include "ssc32u_msgs/srv/query_pulse_width.hpp"
-#include "ssc32u_msgs/msg/pulse_width.hpp"
-#include "ssc32u_msgs/msg/pulse_widths.hpp"
+#include "ssc32u_driver/ssc32u_driver.hpp"
 
-namespace ssc32u_driver
+int main(int argc, char ** argv)
 {
+  rclcpp::init(argc, argv);
 
-class SSC32UDriver : public rclcpp::Node
-{
-public:
-  explicit SSC32UDriver(const rclcpp::NodeOptions & options);
-  ~SSC32UDriver();
+  auto node = std::make_shared<ssc32u_driver::SSC32UDriver>(rclcpp::NodeOptions());
 
-private:
-  SSC32 ssc32_;
-  rclcpp::Subscription<ssc32u_msgs::msg::ServoCommandGroup>::SharedPtr servo_command_sub_;
-  rclcpp::Subscription<ssc32u_msgs::msg::DiscreteOutput>::SharedPtr discrete_output_sub_;
-  rclcpp::Service<ssc32u_msgs::srv::QueryPulseWidth>::SharedPtr query_pw_srv_;
+  rclcpp::spin(node->get_node_base_interface());
 
-  rclcpp::Publisher<ssc32u_msgs::msg::PulseWidths>::SharedPtr pw_pub_;
-  std::shared_ptr<rclcpp::TimerBase> pw_timer_;
+  rclcpp::shutdown();
 
-  bool publish_pulse_width_;
-  int publish_rate_;
-
-  void command_received(const ssc32u_msgs::msg::ServoCommandGroup::SharedPtr msg);
-  void discrete_output(const ssc32u_msgs::msg::DiscreteOutput::SharedPtr msg);
-  void publish_pulse_widths();
-
-  void query_pulse_width(const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<ssc32u_msgs::srv::QueryPulseWidth::Request> request,
-    std::shared_ptr<ssc32u_msgs::srv::QueryPulseWidth::Response> response);
-};
-
-}  // namespace ssc32u_driver
-
-#endif  // SSC32U_DRIVER__SSC32U_DRIVER_HPP_
+  return 0;
+}

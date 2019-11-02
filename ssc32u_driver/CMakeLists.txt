@@ -18,12 +18,10 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ssc32u_msgs REQUIRED)
-find_package(lifecycle_msgs REQUIRED)
 
 include_directories(include)
 
@@ -40,18 +38,24 @@ target_compile_definitions(ssc32u_driver
 ament_target_dependencies(ssc32u_driver
   "rclcpp"
   "rclcpp_components"
-  "rclcpp_lifecycle"
-  "lifecycle_msgs"
   "std_msgs"
   "ssc32u_msgs")
 rclcpp_components_register_nodes(ssc32u_driver "ssc32u_driver::SSC32UDriver")
 set(node_plugins "${node_plugins}ssc32u_driver::SSC32UDriver;$<TARGET_FILE:ssc32u_driver>\n")
 
+add_executable(ssc32u_node
+  src/ssc32u_node.cpp
+)
+target_link_libraries(ssc32u_node
+  ssc32 ssc32u_driver
+)
+
 install(TARGETS
   ssc32u_driver
+  ssc32u_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin)
+  RUNTIME DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

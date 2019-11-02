@@ -46,17 +46,13 @@ namespace ssc32u_driver
 {
 
 SSC32UDriver::SSC32UDriver(const rclcpp::NodeOptions & options)
-: rclcpp_lifecycle::LifecycleNode("ssc32u", options)
+: rclcpp::Node("ssc32u", options)
 {
   declare_parameter<std::string>("port", "/dev/ttyUSB0");
   declare_parameter<int>("baud", 115200); // TODO: Switch back to 9600 as default, but recommend using 115200
   declare_parameter<bool>("publish_pulse_width", false);
   declare_parameter<int>("publish_rate", 10); // TODO: Document that you shouldn't go higher than 10hz
-}
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-SSC32UDriver::on_configure(const rclcpp_lifecycle::State &)
-{
   std::string port;
   int baud;
 
@@ -67,21 +63,10 @@ SSC32UDriver::on_configure(const rclcpp_lifecycle::State &)
 
   if (!ssc32_.open_port(port.c_str(), baud)) {
     RCLCPP_ERROR(get_logger(), "Unable to initialize the SSC32");
-    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::ERROR;
   }
 
   if (publish_pulse_width_) {
     pw_pub_ = create_publisher<ssc32u_msgs::msg::PulseWidths>("pulse_widths", 10);
-  }
-
-  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
-}
-
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-SSC32UDriver::on_activate(const rclcpp_lifecycle::State &)
-{
-  if (publish_pulse_width_) {
-    pw_pub_->on_activate();
   }
 
   servo_command_sub_ = create_subscription<ssc32u_msgs::msg::ServoCommandGroup>(
@@ -97,42 +82,11 @@ SSC32UDriver::on_activate(const rclcpp_lifecycle::State &)
     pw_timer_ = create_wall_timer(
       std::chrono::milliseconds(1000 / publish_rate_), std::bind(&SSC32UDriver::publish_pulse_widths, this));
   }
-
-  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
 }
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-SSC32UDriver::on_deactivate(const rclcpp_lifecycle::State &)
+SSC32UDriver::~SSC32UDriver()
 {
-  if (publish_pulse_width_) {
-    pw_pub_->on_deactivate();
-
-    if (publish_rate_ > 0) {
-      pw_timer_->cancel();
-    }
-  }
-  
-  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
-}
-
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-SSC32UDriver::on_cleanup(const rclcpp_lifecycle::State &)
-{
-  pw_timer_.reset();
-  pw_pub_.reset();
-
-  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
-}
-
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-SSC32UDriver::on_shutdown(const rclcpp_lifecycle::State &)
-{
-  pw_timer_.reset();
-  pw_pub_.reset();
-
   ssc32_.close_port();
-
-  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
 }
 
 void SSC32UDriver::command_received(const ssc32u_msgs::msg::ServoCommandGroup::SharedPtr msg)
@@ -184,7 +138,4 @@ void SSC32UDriver::publish_pulse_widths()
 
 #include "rclcpp_components/register_node_macro.hpp"
 
-// Register the component with class_loader.
-// This acts as a sort of entry point, allowing the component to be discoverable when its library
-// is being loaded into a running process.
 RCLCPP_COMPONENTS_REGISTER_NODE(ssc32u_driver::SSC32UDriver)
