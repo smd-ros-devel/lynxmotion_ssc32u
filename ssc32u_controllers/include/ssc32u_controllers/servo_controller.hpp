@@ -75,6 +75,7 @@ private:
   rclcpp::Client<ssc32u_msgs::srv::QueryPulseWidth>::SharedPtr query_pw_client_;
   std::shared_ptr<rclcpp::TimerBase> joint_states_timer_;
 
+  void init();
   void publish_joint_states();
   void joint_command_callback(const trajectory_msgs::msg::JointTrajectory::SharedPtr msg);
   void relax_joints(const std::shared_ptr<rmw_request_id_t> request_header,

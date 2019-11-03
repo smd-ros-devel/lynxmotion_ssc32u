@@ -52,6 +52,8 @@ ServoController::ServoController(const rclcpp::NodeOptions & options = (
   setup_publishers();
   setup_services();
   setup_clients();
+
+  init();
 }
 
 int ServoController::clamp_pulse_width(int pulse_width)
@@ -70,6 +72,35 @@ int ServoController::clamp_pulse_width(int pulse_width)
 int ServoController::invert_pulse_width(int pulse_width)
 {
   return 3000 - pulse_width;
+}
+
+void ServoController::init()
+{
+  auto command_msg = std::make_unique<ssc32u_msgs::msg::ServoCommandGroup>();
+  double scale = 1.0 * 2000.0 / M_PI;
+
+  for (auto it = joints_map_.begin(); it != joints_map_.end(); it++) {
+    auto joint = it->second;
+    if (joint.initialize) {
+      ssc32u_msgs::msg::ServoCommand command;
+      command.channel = joint.channel;
+      command.pw = (unsigned int)(scale * (joint.default_angle - joint.offset_angle) + 1500 + 0.5);
+
+      command.pw = clamp_pulse_width(command.pw);
+
+      if (joint.invert) {
+        command.pw = invert_pulse_width(command.pw);
+      }
+
+      RCLCPP_INFO(get_logger(), "Initializing channel %d to pulse width %d", command.channel, command.pw);
+
+      command_msg->commands.push_back(command);
+    }
+  }
+
+  if (command_msg->commands.size() > 0) {
+    servo_command_pub_->publish(std::move(command_msg));
+  }
 }
 
 void ServoController::joint_command_callback(const trajectory_msgs::msg::JointTrajectory::SharedPtr msg)
