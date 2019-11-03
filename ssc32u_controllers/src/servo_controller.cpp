@@ -47,76 +47,29 @@ ServoController::ServoController(const rclcpp::NodeOptions & options = (
 ))
 : Node("ssc32u_servo_controller", options)
 {
-  declare_parameter("publish_joint_states", true);
-  declare_parameter("publish_rate", 5);
+  process_parameters();
+  setup_subscriptions();
+  setup_publishers();
+  setup_services();
+  setup_clients();
+}
 
-  auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this);
-  auto joint_parameters = parameters_client->list_parameters({"joints"}, 3);
-
-  if (joint_parameters.names.size() == 0) {
-    RCLCPP_WARN(get_logger(), "No joints were provided");
+int ServoController::clamp_pulse_width(int pulse_width)
+{
+  if (pulse_width < 500) {
+		return 500;
   }
 
-  // Extract joint names from parameter list
-  std::set<std::string> joint_names_set;
-  for (auto & name : joint_parameters.names) {
-    int start = name.find(".");
-    int end = name.find(".", start + 1);
-    std::string joint_name = name.substr(start + 1, end - start - 1);
-
-    joint_names_set.insert(joint_name);
+  if (pulse_width > 2500) {
+    return 2500;
   }
 
-  // Extract joint properties
-  for (auto & name : joint_names_set) {
-    Joint joint;
-    joint.name = name;
+  return pulse_width;
+}
 
-    get_parameter("joints." + name + ".channel", joint.channel);
-    get_parameter("joints." + name + ".max_angle", joint.max_angle);
-    get_parameter("joints." + name + ".min_angle", joint.min_angle);
-    get_parameter("joints." + name + ".offset_angle", joint.offset_angle);
-    get_parameter("joints." + name + ".default_angle", joint.default_angle);
-    get_parameter("joints." + name + ".initialize", joint.initialize);
-    get_parameter("joints." + name + ".invert", joint.invert);
-
-    joints_map_[name] = joint;
-  }
-
-  joint_trajectory_sub_ = create_subscription<trajectory_msgs::msg::JointTrajectory>(
-    "command",
-    1,
-    std::bind(&ServoController::joint_command_callback, this, _1));
-
-  discrete_output_pub_ = create_publisher<ssc32u_msgs::msg::DiscreteOutput>(
-    "discrete_output",
-    rclcpp::QoS(rclcpp::KeepLast(1)));
-
-  servo_command_pub_ = create_publisher<ssc32u_msgs::msg::ServoCommandGroup>(
-    "servo_cmd",
-    rclcpp::QoS(rclcpp::KeepLast(1)));
-
-  relax_joints_srv_ = create_service<std_srvs::srv::Empty>(
-    "relax_joints",
-    std::bind(&ServoController::relax_joints, this, _1, _2, _3));
-
-  query_pw_client_ = create_client<ssc32u_msgs::srv::QueryPulseWidth>("query_pulse_width");
-
-  bool publish_joint_states = true;
-  int publish_rate = 10;
-
-  get_parameter("publish_joint_states", publish_joint_states);
-  get_parameter("publish_rate", publish_rate);
-
-  if (publish_joint_states) {
-    joint_state_pub_ = create_publisher<sensor_msgs::msg::JointState>("joint_states", rclcpp::QoS(rclcpp::KeepLast(1)));
-  }
-
-  if (publish_joint_states && publish_rate > 0) {
-    joint_states_timer_ = create_wall_timer(
-      std::chrono::milliseconds(1000 / publish_rate),
-      std::bind(&ServoController::publish_joint_states, this));
-  }
+int ServoController::invert_pulse_width(int pulse_width)
+{
+  return 3000 - pulse_width;
 }
 
 void ServoController::joint_command_callback(const trajectory_msgs::msg::JointTrajectory::SharedPtr msg)
@@ -216,25 +169,87 @@ void ServoController::publish_joint_states()
   auto result = query_pw_client_->async_send_request(request, response_received_callback);
 }
 
-int ServoController::clamp_pulse_width(int pulse_width)
+void ServoController::process_parameters()
 {
-  if (pulse_width < 500) {
-		return 500;
+  auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this);
+  auto joint_parameters = parameters_client->list_parameters({"joints"}, 3);
+
+  if (joint_parameters.names.size() == 0) {
+    RCLCPP_WARN(get_logger(), "No joints were provided");
   }
 
-  if (pulse_width > 2500) {
-    return 2500;
+  // Extract joint names from parameter list
+  std::set<std::string> joint_names_set;
+  for (auto & name : joint_parameters.names) {
+    int start = name.find(".");
+    int end = name.find(".", start + 1);
+    std::string joint_name = name.substr(start + 1, end - start - 1);
+
+    joint_names_set.insert(joint_name);
   }
 
-  return pulse_width;
+  // Extract joint properties
+  for (auto & name : joint_names_set) {
+    Joint joint;
+    joint.name = name;
+
+    get_parameter("joints." + name + ".channel", joint.channel);
+    get_parameter("joints." + name + ".max_angle", joint.max_angle);
+    get_parameter("joints." + name + ".min_angle", joint.min_angle);
+    get_parameter("joints." + name + ".offset_angle", joint.offset_angle);
+    get_parameter("joints." + name + ".default_angle", joint.default_angle);
+    get_parameter("joints." + name + ".initialize", joint.initialize);
+    get_parameter("joints." + name + ".invert", joint.invert);
+
+    joints_map_[name] = joint;
+  }
+
+  get_parameter("publish_joint_states", publish_joint_states_);
+  get_parameter("publish_rate", publish_rate_);
 }
 
-int ServoController::invert_pulse_width(int pulse_width)
+void ServoController::setup_subscriptions()
 {
-  return 3000 - pulse_width;
+  joint_trajectory_sub_ = create_subscription<trajectory_msgs::msg::JointTrajectory>(
+    "command",
+    1,
+    std::bind(&ServoController::joint_command_callback, this, _1));
 }
 
-}  // ssc32u_controllers
+void ServoController::setup_publishers()
+{
+  discrete_output_pub_ = create_publisher<ssc32u_msgs::msg::DiscreteOutput>(
+    "discrete_output",
+    rclcpp::QoS(rclcpp::KeepLast(1)));
+
+  servo_command_pub_ = create_publisher<ssc32u_msgs::msg::ServoCommandGroup>(
+    "servo_cmd",
+    rclcpp::QoS(rclcpp::KeepLast(1)));
+
+  if (publish_joint_states_) {
+    joint_state_pub_ = create_publisher<sensor_msgs::msg::JointState>("joint_states", rclcpp::QoS(rclcpp::KeepLast(1)));
+
+    if (publish_rate_ > 0) {
+      joint_states_timer_ = create_wall_timer(
+        std::chrono::milliseconds(1000 / publish_rate_),
+        std::bind(&ServoController::publish_joint_states, this));
+    }
+  }
+}
+
+void ServoController::setup_services()
+{
+  relax_joints_srv_ = create_service<std_srvs::srv::Empty>(
+    "relax_joints",
+    std::bind(&ServoController::relax_joints, this, _1, _2, _3));
+}
+
+void ServoController::setup_clients()
+{
+  query_pw_client_ = create_client<ssc32u_msgs::srv::QueryPulseWidth>("query_pulse_width");
+}
+
+}  // namespace ssc32u_controllers
 
 #include "rclcpp_components/register_node_macro.hpp"
 

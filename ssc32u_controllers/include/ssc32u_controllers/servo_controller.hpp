@@ -59,7 +59,13 @@ class ServoController : public rclcpp::Node
 public:
   explicit ServoController(const rclcpp::NodeOptions & options);
 
+  int clamp_pulse_width(int pulse_width);
+  int invert_pulse_width(int pulse_width);
+
 private:
+  bool publish_joint_states_ = true;
+  int publish_rate_ = 10;
+
   std::map<std::string, Joint> joints_map_;
   rclcpp::Subscription<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_trajectory_sub_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
@@ -75,8 +81,11 @@ private:
     const std::shared_ptr<std_srvs::srv::Empty::Request> request,
     std::shared_ptr<std_srvs::srv::Empty::Response> response);
 
-  int clamp_pulse_width(int pulse_width);
-  int invert_pulse_width(int pulse_width);
+  void process_parameters();
+  void setup_subscriptions();
+  void setup_publishers();
+  void setup_services();
+  void setup_clients();
 };
 
 }  // namespace ssc32u_controllers
