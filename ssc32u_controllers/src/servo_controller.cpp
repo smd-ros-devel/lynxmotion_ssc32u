@@ -74,6 +74,17 @@ int ServoController::invert_pulse_width(int pulse_width)
   return 3000 - pulse_width;
 }
 
+void ServoController::relax_joints()
+{
+  for (auto it = joints_map_.begin(); it != joints_map_.end(); it++) {
+    auto msg = std::make_unique<ssc32u_msgs::msg::DiscreteOutput>();
+    msg->channel = it->second.channel;
+    msg->output = 0; // Low
+
+    discrete_output_pub_->publish(std::move(msg));
+  }
+}
+
 void ServoController::init()
 {
   auto command_msg = std::make_unique<ssc32u_msgs::msg::ServoCommandGroup>();
@@ -150,17 +161,11 @@ void ServoController::joint_command_callback(const trajectory_msgs::msg::JointTr
   }
 }
 
-void ServoController::relax_joints(const std::shared_ptr<rmw_request_id_t>,
+void ServoController::relax_joints_callback(const std::shared_ptr<rmw_request_id_t>,
   const std::shared_ptr<std_srvs::srv::Empty::Request>,
   std::shared_ptr<std_srvs::srv::Empty::Response>)
 {
-  for (auto it = joints_map_.begin(); it != joints_map_.end(); it++) {
-    auto msg = std::make_unique<ssc32u_msgs::msg::DiscreteOutput>();
-    msg->channel = it->second.channel;
-    msg->output = 0; // Low
-
-    discrete_output_pub_->publish(std::move(msg));
-  }
+  relax_joints();
 }
 
 void ServoController::publish_joint_states()
@@ -272,7 +277,7 @@ void ServoController::setup_services()
 {
   relax_joints_srv_ = create_service<std_srvs::srv::Empty>(
     "relax_joints",
-    std::bind(&ServoController::relax_joints, this, _1, _2, _3));
+    std::bind(&ServoController::relax_joints_callback, this, _1, _2, _3));
 }
 
 void ServoController::setup_clients()

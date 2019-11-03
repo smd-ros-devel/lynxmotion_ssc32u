@@ -61,6 +61,7 @@ public:
 
   int clamp_pulse_width(int pulse_width);
   int invert_pulse_width(int pulse_width);
+  void relax_joints();
 
 private:
   bool publish_joint_states_ = true;
@@ -78,7 +79,7 @@ private:
   void init();
   void publish_joint_states();
   void joint_command_callback(const trajectory_msgs::msg::JointTrajectory::SharedPtr msg);
-  void relax_joints(const std::shared_ptr<rmw_request_id_t> request_header,
+  void relax_joints_callback(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<std_srvs::srv::Empty::Request> request,
     std::shared_ptr<std_srvs::srv::Empty::Response> response);
 
