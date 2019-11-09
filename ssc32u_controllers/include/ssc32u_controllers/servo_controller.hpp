@@ -37,7 +37,7 @@
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "ssc32u_msgs/msg/servo_command_group.hpp"
 #include "ssc32u_msgs/msg/discrete_output.hpp"
-#include "ssc32u_msgs/srv/query_pulse_width.hpp"
+#include "ssc32u_msgs/msg/pulse_widths.hpp"
 
 namespace ssc32u_controllers
 {
@@ -65,20 +65,18 @@ public:
 
 private:
   bool publish_joint_states_ = true;
-  int publish_rate_ = 10;
 
   std::map<std::string, Joint> joints_map_;
+  rclcpp::Subscription<ssc32u_msgs::msg::PulseWidths>::SharedPtr pulse_width_sub_;
   rclcpp::Subscription<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_trajectory_sub_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
   rclcpp::Publisher<ssc32u_msgs::msg::DiscreteOutput>::SharedPtr discrete_output_pub_;
   rclcpp::Publisher<ssc32u_msgs::msg::ServoCommandGroup>::SharedPtr servo_command_pub_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr relax_joints_srv_;
-  rclcpp::Client<ssc32u_msgs::srv::QueryPulseWidth>::SharedPtr query_pw_client_;
-  std::shared_ptr<rclcpp::TimerBase> joint_states_timer_;
 
   void init();
-  void publish_joint_states();
   void joint_command_callback(const trajectory_msgs::msg::JointTrajectory::SharedPtr msg);
+  void pulse_widths_callback(const ssc32u_msgs::msg::PulseWidths::SharedPtr msg);
   void relax_joints_callback(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<std_srvs::srv::Empty::Request> request,
     std::shared_ptr<std_srvs::srv::Empty::Response> response);
@@ -87,7 +85,6 @@ private:
   void setup_subscriptions();
   void setup_publishers();
   void setup_services();
-  void setup_clients();
 };
 
 }  // namespace ssc32u_controllers
