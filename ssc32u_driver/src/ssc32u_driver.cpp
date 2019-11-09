@@ -52,6 +52,7 @@ SSC32UDriver::SSC32UDriver(const rclcpp::NodeOptions & options)
   declare_parameter<int>("baud", 115200); // TODO: Switch back to 9600 as default, but recommend using 115200
   declare_parameter<bool>("publish_pulse_width", false);
   declare_parameter<int>("publish_rate", 10); // TODO: Document that you shouldn't go higher than 10hz
+  declare_parameter<int>("channel_limit", 16);
 
   std::string port;
   int baud;
@@ -60,6 +61,7 @@ SSC32UDriver::SSC32UDriver(const rclcpp::NodeOptions & options)
   get_parameter("baud", baud);
   get_parameter("publish_pulse_width", publish_pulse_width_);
   get_parameter("publish_rate", publish_rate_);
+  get_parameter("channel_limit", channel_limit_);
 
   if (!ssc32_.open_port(port.c_str(), baud)) {
     RCLCPP_ERROR(get_logger(), "Unable to initialize the SSC32");
@@ -120,8 +122,7 @@ void SSC32UDriver::publish_pulse_widths()
 {
   auto msg = std::make_unique<ssc32u_msgs::msg::PulseWidths>();
 
-  // TODO: make the number of channels we query configurable
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < channel_limit_; i++) {
     int pw = ssc32_.query_pulse_width(i);
 
     ssc32u_msgs::msg::PulseWidth ch;

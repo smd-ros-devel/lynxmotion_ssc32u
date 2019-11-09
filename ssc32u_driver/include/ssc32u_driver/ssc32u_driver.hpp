@@ -59,6 +59,7 @@ private:
 
   bool publish_pulse_width_;
   int publish_rate_;
+  int channel_limit_;
 
   void command_received(const ssc32u_msgs::msg::ServoCommandGroup::SharedPtr msg);
   void discrete_output(const ssc32u_msgs::msg::DiscreteOutput::SharedPtr msg);
