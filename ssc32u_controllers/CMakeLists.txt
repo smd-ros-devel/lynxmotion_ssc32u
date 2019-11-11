@@ -22,6 +22,7 @@ find_package(rclcpp_components REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(ssc32u_msgs REQUIRED)
 
 include_directories(include)
@@ -50,9 +51,30 @@ target_link_libraries(servo_controller_node
   servo_controller
 )
 
+add_library(sabertooth_2x5_controller SHARED
+  src/sabertooth_2x5_controller.cpp)
+target_compile_definitions(sabertooth_2x5_controller
+  PRIVATE "SSC32U_BUILDING_DLL")
+ament_target_dependencies(sabertooth_2x5_controller
+  "rclcpp"
+  "rclcpp_components"
+  "geometry_msgs"
+  "ssc32u_msgs")
+rclcpp_components_register_nodes(sabertooth_2x5_controller "ssc32u_controllers::Sabertooth2x5Controller")
+set(node_plugins "${node_plugins}ssc32u_controllers::Sabertooth2x5Controller;$<TARGET_FILE:sabertooth_2x5_controller>\n")
+
+add_executable(sabertooth_2x5_controller_node
+  src/sabertooth_2x5_controller_node.cpp
+)
+target_link_libraries(sabertooth_2x5_controller_node
+sabertooth_2x5_controller
+)
+
 install(TARGETS
   servo_controller
   servo_controller_node
+  sabertooth_2x5_controller
+  sabertooth_2x5_controller_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME})
