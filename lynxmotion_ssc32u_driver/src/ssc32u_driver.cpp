@@ -28,7 +28,7 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "ssc32u_driver/ssc32u_driver.hpp"
+#include "lynxmotion_ssc32u_driver/ssc32u_driver.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -42,11 +42,11 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;
 
-namespace ssc32u_driver
+namespace lynxmotion_ssc32u_driver
 {
 
 SSC32UDriver::SSC32UDriver(const rclcpp::NodeOptions & options)
-: rclcpp::Node("ssc32u", options)
+: rclcpp::Node("lynxmotion_ssc32u", options)
 {
   declare_parameter<std::string>("port", "/dev/ttyUSB0");
   declare_parameter<int>("baud", 9600);
@@ -68,16 +68,16 @@ SSC32UDriver::SSC32UDriver(const rclcpp::NodeOptions & options)
   }
 
   if (publish_pulse_width_) {
-    pw_pub_ = create_publisher<ssc32u_msgs::msg::PulseWidths>("pulse_widths", 10);
+    pw_pub_ = create_publisher<lynxmotion_ssc32u_msgs::msg::PulseWidths>("pulse_widths", 10);
   }
 
-  servo_command_sub_ = create_subscription<ssc32u_msgs::msg::ServoCommandGroup>(
+  servo_command_sub_ = create_subscription<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>(
     "servo_cmd", 1, std::bind(&SSC32UDriver::command_received, this, _1));
 
-  discrete_output_sub_ = create_subscription<ssc32u_msgs::msg::DiscreteOutput>(
+  discrete_output_sub_ = create_subscription<lynxmotion_ssc32u_msgs::msg::DiscreteOutput>(
     "discrete_output", 1, std::bind(&SSC32UDriver::discrete_output, this, _1));
 
-  query_pw_srv_ = create_service<ssc32u_msgs::srv::QueryPulseWidth>(
+  query_pw_srv_ = create_service<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth>(
     "query_pulse_width", std::bind(&SSC32UDriver::query_pulse_width, this, _1, _2, _3));
 
   if (publish_pulse_width_ && publish_rate_ > 0) {
@@ -91,10 +91,10 @@ SSC32UDriver::~SSC32UDriver()
   ssc32_.close_port();
 }
 
-void SSC32UDriver::command_received(const ssc32u_msgs::msg::ServoCommandGroup::SharedPtr msg)
+void SSC32UDriver::command_received(const lynxmotion_ssc32u_msgs::msg::ServoCommandGroup::SharedPtr msg)
 {
   for (auto &command : msg->commands) {
-    ssc32u_driver::SSC32::ServoCommand cmd;
+    lynxmotion_ssc32u_driver::SSC32::ServoCommand cmd;
     cmd.ch = command.channel;
     cmd.pw = command.pw;
 
@@ -102,14 +102,14 @@ void SSC32UDriver::command_received(const ssc32u_msgs::msg::ServoCommandGroup::S
   }
 }
 
-void SSC32UDriver::discrete_output(const ssc32u_msgs::msg::DiscreteOutput::SharedPtr msg)
+void SSC32UDriver::discrete_output(const lynxmotion_ssc32u_msgs::msg::DiscreteOutput::SharedPtr msg)
 {
   ssc32_.discrete_output(msg->channel, msg->output ? SSC32::High : SSC32::Low);
 }
 
 void SSC32UDriver::query_pulse_width(const std::shared_ptr<rmw_request_id_t>,
-  const std::shared_ptr<ssc32u_msgs::srv::QueryPulseWidth::Request> request,
-  std::shared_ptr<ssc32u_msgs::srv::QueryPulseWidth::Response> response)
+  const std::shared_ptr<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth::Request> request,
+  std::shared_ptr<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth::Response> response)
 {
   for (auto & channel : request->channels) {
     int pw = ssc32_.query_pulse_width(channel);
@@ -120,12 +120,12 @@ void SSC32UDriver::query_pulse_width(const std::shared_ptr<rmw_request_id_t>,
 
 void SSC32UDriver::publish_pulse_widths()
 {
-  auto msg = std::make_unique<ssc32u_msgs::msg::PulseWidths>();
+  auto msg = std::make_unique<lynxmotion_ssc32u_msgs::msg::PulseWidths>();
 
   for (int i = 0; i < channel_limit_; i++) {
     int pw = ssc32_.query_pulse_width(i);
 
-    ssc32u_msgs::msg::PulseWidth ch;
+    lynxmotion_ssc32u_msgs::msg::PulseWidth ch;
     ch.channel = i;
     ch.pw = pw;
 
@@ -135,8 +135,8 @@ void SSC32UDriver::publish_pulse_widths()
   pw_pub_->publish(std::move(msg));
 }
 
-}  // namespace ssc32u_driver
+}  // namespace lynxmotion_ssc32u_driver
 
 #include "rclcpp_components/register_node_macro.hpp"
 
-RCLCPP_COMPONENTS_REGISTER_NODE(ssc32u_driver::SSC32UDriver)
+RCLCPP_COMPONENTS_REGISTER_NODE(lynxmotion_ssc32u_driver::SSC32UDriver)

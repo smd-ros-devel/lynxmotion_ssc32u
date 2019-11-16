@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(ssc32u_driver)
+project(lynxmotion_ssc32u_driver)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -21,7 +21,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(ssc32u_msgs REQUIRED)
+find_package(lynxmotion_ssc32u_msgs REQUIRED)
 
 include_directories(include)
 
@@ -34,14 +34,14 @@ add_library(ssc32u_driver SHARED
   src/ssc32u_driver.cpp)
 target_link_libraries(ssc32u_driver ssc32)
 target_compile_definitions(ssc32u_driver
-  PRIVATE "SSC32U_BUILDING_DLL")
+  PRIVATE "LYNXMOTION_SSC32U_BUILDING_DLL")
 ament_target_dependencies(ssc32u_driver
   "rclcpp"
   "rclcpp_components"
   "std_msgs"
-  "ssc32u_msgs")
-rclcpp_components_register_nodes(ssc32u_driver "ssc32u_driver::SSC32UDriver")
-set(node_plugins "${node_plugins}ssc32u_driver::SSC32UDriver;$<TARGET_FILE:ssc32u_driver>\n")
+  "lynxmotion_ssc32u_msgs")
+rclcpp_components_register_nodes(ssc32u_driver "lynxmotion_ssc32u_driver::SSC32UDriver")
+set(node_plugins "${node_plugins}lynxmotion_ssc32u_driver::SSC32UDriver;$<TARGET_FILE:ssc32u_driver>\n")
 
 add_executable(ssc32u_node
   src/ssc32u_node.cpp

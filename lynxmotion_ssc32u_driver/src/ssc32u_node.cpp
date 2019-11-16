@@ -31,13 +31,13 @@
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
-#include "ssc32u_driver/ssc32u_driver.hpp"
+#include "lynxmotion_ssc32u_driver/ssc32u_driver.hpp"
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<ssc32u_driver::SSC32UDriver>(rclcpp::NodeOptions());
+  auto node = std::make_shared<lynxmotion_ssc32u_driver::SSC32UDriver>(rclcpp::NodeOptions());
 
   rclcpp::spin(node->get_node_base_interface());
 

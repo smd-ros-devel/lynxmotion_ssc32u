@@ -28,14 +28,14 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "ssc32u_controllers/sabertooth_2x5_controller.hpp"
+#include "lynxmotion_ssc32u_controllers/sabertooth_2x5_controller.hpp"
 
 #include <utility>
 #include <algorithm>
 
 using std::placeholders::_1;
 
-namespace ssc32u_controllers
+namespace lynxmotion_ssc32u_controllers
 {
 
 Sabertooth2x5Controller::Sabertooth2x5Controller(const rclcpp::NodeOptions & options)
@@ -61,7 +61,7 @@ int Sabertooth2x5Controller::clamp_pulse_width(int pulse_width)
 
 void Sabertooth2x5Controller::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
 {
-  auto command_msg = std::make_unique<ssc32u_msgs::msg::ServoCommandGroup>();
+  auto command_msg = std::make_unique<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>();
 
 	double ch1_vel = (2.0 * msg->linear.x - msg->angular.z * wheel_base_) / wheel_diam_;
 	double ch2_vel = (2.0 * msg->linear.x + msg->angular.z * wheel_base_) / wheel_diam_;
@@ -69,11 +69,11 @@ void Sabertooth2x5Controller::cmd_vel_callback(const geometry_msgs::msg::Twist::
   ch1_vel = std::min(ch1_vel / max_vel_, 1.0);
   ch2_vel = std::min(ch2_vel / max_vel_, 1.0);
   
-  ssc32u_msgs::msg::ServoCommand ch1_command;
+  lynxmotion_ssc32u_msgs::msg::ServoCommand ch1_command;
   ch1_command.channel = ch1_channel_;
   ch1_command.pw = clamp_pulse_width(1000 * ch1_vel + 1500);
 
-  ssc32u_msgs::msg::ServoCommand ch2_command;
+  lynxmotion_ssc32u_msgs::msg::ServoCommand ch2_command;
   ch2_command.channel = ch2_channel_;
   ch2_command.pw = clamp_pulse_width(1000 * ch2_vel + 1500);
 
@@ -83,7 +83,7 @@ void Sabertooth2x5Controller::cmd_vel_callback(const geometry_msgs::msg::Twist::
   servo_command_pub_->publish(std::move(command_msg));
 }
 
-void Sabertooth2x5Controller::pulse_widths_callback(const ssc32u_msgs::msg::PulseWidths::SharedPtr)
+void Sabertooth2x5Controller::pulse_widths_callback(const lynxmotion_ssc32u_msgs::msg::PulseWidths::SharedPtr)
 {
   
 }
@@ -107,7 +107,7 @@ void Sabertooth2x5Controller::process_parameters()
 
 void Sabertooth2x5Controller::setup_subscriptions()
 {
-  pulse_width_sub_ = create_subscription<ssc32u_msgs::msg::PulseWidths>(
+  pulse_width_sub_ = create_subscription<lynxmotion_ssc32u_msgs::msg::PulseWidths>(
     "pulse_widths",
     1,
     std::bind(&Sabertooth2x5Controller::pulse_widths_callback, this, _1));
@@ -120,13 +120,13 @@ void Sabertooth2x5Controller::setup_subscriptions()
 
 void Sabertooth2x5Controller::setup_publishers()
 {
-  servo_command_pub_ = create_publisher<ssc32u_msgs::msg::ServoCommandGroup>(
+  servo_command_pub_ = create_publisher<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>(
     "servo_cmd",
     rclcpp::QoS(rclcpp::KeepLast(1)));
 }
 
-}  // namespace ssc32u_controllers
+}  // namespace lynxmotion_ssc32u_controllers
 
 #include "rclcpp_components/register_node_macro.hpp"
 
-RCLCPP_COMPONENTS_REGISTER_NODE(ssc32u_controllers::Sabertooth2x5Controller)
+RCLCPP_COMPONENTS_REGISTER_NODE(lynxmotion_ssc32u_controllers::Sabertooth2x5Controller)

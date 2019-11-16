@@ -28,7 +28,7 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "ssc32u_controllers/servo_controller.hpp"
+#include "lynxmotion_ssc32u_controllers/servo_controller.hpp"
 
 #include <utility>
 #include <cmath>
@@ -37,7 +37,7 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;
 
-namespace ssc32u_controllers
+namespace lynxmotion_ssc32u_controllers
 {
 
 ServoController::ServoController(const rclcpp::NodeOptions & options = (
@@ -45,7 +45,7 @@ ServoController::ServoController(const rclcpp::NodeOptions & options = (
     .allow_undeclared_parameters(true)
     .automatically_declare_parameters_from_overrides(true)
 ))
-: Node("ssc32u_servo_controller", options)
+: Node("lynxmotion_ssc32u_servo_controller", options)
 {
   process_parameters();
   setup_subscriptions();
@@ -74,7 +74,7 @@ int ServoController::invert_pulse_width(int pulse_width)
 void ServoController::relax_joints()
 {
   for (auto it = joints_map_.begin(); it != joints_map_.end(); it++) {
-    auto msg = std::make_unique<ssc32u_msgs::msg::DiscreteOutput>();
+    auto msg = std::make_unique<lynxmotion_ssc32u_msgs::msg::DiscreteOutput>();
     msg->channel = it->second.channel;
     msg->output = 0; // Low
 
@@ -89,13 +89,13 @@ void ServoController::init()
     return;
   }
 
-  auto command_msg = std::make_unique<ssc32u_msgs::msg::ServoCommandGroup>();
+  auto command_msg = std::make_unique<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>();
   double scale = 1.0 * 2000.0 / M_PI;
 
   for (auto it = joints_map_.begin(); it != joints_map_.end(); it++) {
     auto joint = it->second;
     if (joint.initialize) {
-      ssc32u_msgs::msg::ServoCommand command;
+      lynxmotion_ssc32u_msgs::msg::ServoCommand command;
       command.channel = joint.channel;
       command.pw = (unsigned int)(scale * (joint.default_angle - joint.offset_angle) + 1500 + 0.5);
 
@@ -116,7 +116,7 @@ void ServoController::init()
   }
 }
 
-void ServoController::pulse_widths_callback(const ssc32u_msgs::msg::PulseWidths::SharedPtr msg)
+void ServoController::pulse_widths_callback(const lynxmotion_ssc32u_msgs::msg::PulseWidths::SharedPtr msg)
 {
   if (!publish_joint_states_) {
     return;
@@ -163,12 +163,12 @@ void ServoController::pulse_widths_callback(const ssc32u_msgs::msg::PulseWidths:
 
 void ServoController::joint_command_callback(const trajectory_msgs::msg::JointTrajectory::SharedPtr msg)
 {
-  auto command_msg = std::make_unique<ssc32u_msgs::msg::ServoCommandGroup>();
+  auto command_msg = std::make_unique<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>();
   bool invalid = false;
 
   for (unsigned int i = 0; i < msg->points.size(); i++) {
 		for (unsigned int j = 0; j < msg->joint_names.size() && !invalid; j++) {
-      ssc32u_msgs::msg::ServoCommand command;
+      lynxmotion_ssc32u_msgs::msg::ServoCommand command;
 
       if (joints_map_.find(msg->joint_names[j]) != joints_map_.end()) {
 				Joint joint = joints_map_[msg->joint_names[j]];
@@ -255,7 +255,7 @@ void ServoController::process_parameters()
 
 void ServoController::setup_subscriptions()
 {
-  pulse_width_sub_ = create_subscription<ssc32u_msgs::msg::PulseWidths>(
+  pulse_width_sub_ = create_subscription<lynxmotion_ssc32u_msgs::msg::PulseWidths>(
     "pulse_widths",
     1,
     std::bind(&ServoController::pulse_widths_callback, this, _1));
@@ -268,11 +268,11 @@ void ServoController::setup_subscriptions()
 
 void ServoController::setup_publishers()
 {
-  discrete_output_pub_ = create_publisher<ssc32u_msgs::msg::DiscreteOutput>(
+  discrete_output_pub_ = create_publisher<lynxmotion_ssc32u_msgs::msg::DiscreteOutput>(
     "discrete_output",
     rclcpp::QoS(rclcpp::KeepLast(1)));
 
-  servo_command_pub_ = create_publisher<ssc32u_msgs::msg::ServoCommandGroup>(
+  servo_command_pub_ = create_publisher<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>(
     "servo_cmd",
     rclcpp::QoS(rclcpp::KeepLast(1)));
 
@@ -291,8 +291,8 @@ void ServoController::setup_services()
     std::bind(&ServoController::relax_joints_callback, this, _1, _2, _3));
 }
 
-}  // namespace ssc32u_controllers
+}  // namespace lynxmotion_ssc32u_controllers
 
 #include "rclcpp_components/register_node_macro.hpp"
 
-RCLCPP_COMPONENTS_REGISTER_NODE(ssc32u_controllers::ServoController)
+RCLCPP_COMPONENTS_REGISTER_NODE(lynxmotion_ssc32u_controllers::ServoController)

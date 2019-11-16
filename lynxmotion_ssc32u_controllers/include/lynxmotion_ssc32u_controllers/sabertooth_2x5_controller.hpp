@@ -28,20 +28,44 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <memory>
+#ifndef LYNXMOTION_SSC32U_CONTROLLERS__SERVO_CONTROLLER_HPP_
+#define LYNXMOTION_SSC32U_CONTROLLERS__SERVO_CONTROLLER_HPP_
 
 #include "rclcpp/rclcpp.hpp"
-#include "ssc32u_controllers/sabertooth_2x5_controller.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+#include "lynxmotion_ssc32u_msgs/msg/servo_command_group.hpp"
+#include "lynxmotion_ssc32u_msgs/msg/pulse_widths.hpp"
 
-int main(int argc, char ** argv)
+namespace lynxmotion_ssc32u_controllers
 {
-  rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<ssc32u_controllers::Sabertooth2x5Controller>(rclcpp::NodeOptions());
+class Sabertooth2x5Controller : public rclcpp::Node
+{
+public:
+  explicit Sabertooth2x5Controller(const rclcpp::NodeOptions & options);
 
-  rclcpp::spin(node->get_node_base_interface());
+  int clamp_pulse_width(int pulse_width);
 
-  rclcpp::shutdown();
+private:
+  int ch1_channel_;
+  int ch2_channel_;
+  double max_vel_;
+  bool independent_control_;
+  double wheel_diam_;
+  double wheel_base_;
 
-  return 0;
-}
+  rclcpp::Subscription<lynxmotion_ssc32u_msgs::msg::PulseWidths>::SharedPtr pulse_width_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+  rclcpp::Publisher<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>::SharedPtr servo_command_pub_;
+
+  void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
+  void pulse_widths_callback(const lynxmotion_ssc32u_msgs::msg::PulseWidths::SharedPtr msg);
+
+  void process_parameters();
+  void setup_subscriptions();
+  void setup_publishers();
+};
+
+}  // namespace lynxmotion_ssc32u_controllers
+
+#endif  // LYNXMOTION_SSC32U_CONTROLLERS__SERVO_CONTROLLER_HPP_

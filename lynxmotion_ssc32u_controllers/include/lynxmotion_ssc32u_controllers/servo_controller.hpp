@@ -28,18 +28,18 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef SSC32U_CONTROLLERS__SERVO_CONTROLLER_HPP_
-#define SSC32U_CONTROLLERS__SERVO_CONTROLLER_HPP_
+#ifndef LYNXMOTION_SSC32U_CONTROLLERS__SERVO_CONTROLLER_HPP_
+#define LYNXMOTION_SSC32U_CONTROLLERS__SERVO_CONTROLLER_HPP_
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_srvs/srv/empty.hpp"
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
-#include "ssc32u_msgs/msg/servo_command_group.hpp"
-#include "ssc32u_msgs/msg/discrete_output.hpp"
-#include "ssc32u_msgs/msg/pulse_widths.hpp"
+#include "lynxmotion_ssc32u_msgs/msg/servo_command_group.hpp"
+#include "lynxmotion_ssc32u_msgs/msg/discrete_output.hpp"
+#include "lynxmotion_ssc32u_msgs/msg/pulse_widths.hpp"
 
-namespace ssc32u_controllers
+namespace lynxmotion_ssc32u_controllers
 {
 
 struct Joint
@@ -69,17 +69,17 @@ private:
   std::map<std::string, Joint> joints_map_;
   std::map<std::string, int> joints_pos_map_;
 
-  rclcpp::Subscription<ssc32u_msgs::msg::PulseWidths>::SharedPtr pulse_width_sub_;
+  rclcpp::Subscription<lynxmotion_ssc32u_msgs::msg::PulseWidths>::SharedPtr pulse_width_sub_;
   rclcpp::Subscription<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_trajectory_sub_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
-  rclcpp::Publisher<ssc32u_msgs::msg::DiscreteOutput>::SharedPtr discrete_output_pub_;
-  rclcpp::Publisher<ssc32u_msgs::msg::ServoCommandGroup>::SharedPtr servo_command_pub_;
+  rclcpp::Publisher<lynxmotion_ssc32u_msgs::msg::DiscreteOutput>::SharedPtr discrete_output_pub_;
+  rclcpp::Publisher<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>::SharedPtr servo_command_pub_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr relax_joints_srv_;
   std::shared_ptr<rclcpp::TimerBase> init_timer_;
 
   void init();
   void joint_command_callback(const trajectory_msgs::msg::JointTrajectory::SharedPtr msg);
-  void pulse_widths_callback(const ssc32u_msgs::msg::PulseWidths::SharedPtr msg);
+  void pulse_widths_callback(const lynxmotion_ssc32u_msgs::msg::PulseWidths::SharedPtr msg);
   void relax_joints_callback(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<std_srvs::srv::Empty::Request> request,
     std::shared_ptr<std_srvs::srv::Empty::Response> response);
@@ -90,6 +90,6 @@ private:
   void setup_services();
 };
 
-}  // namespace ssc32u_controllers
+}  // namespace lynxmotion_ssc32u_controllers
 
-#endif  // SSC32U_CONTROLLERS__SERVO_CONTROLLER_HPP_
+#endif  // LYNXMOTION_SSC32U_CONTROLLERS__SERVO_CONTROLLER_HPP_

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(ssc32u_controllers)
+project(lynxmotion_ssc32u_controllers)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -23,7 +23,7 @@ find_package(std_srvs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(ssc32u_msgs REQUIRED)
+find_package(lynxmotion_ssc32u_msgs REQUIRED)
 
 include_directories(include)
 
@@ -33,16 +33,16 @@ set(node_plugins "")
 add_library(servo_controller SHARED
   src/servo_controller.cpp)
 target_compile_definitions(servo_controller
-  PRIVATE "SSC32U_BUILDING_DLL")
+  PRIVATE "LYNXMOTION_SSC32U_BUILDING_DLL")
 ament_target_dependencies(servo_controller
   "rclcpp"
   "rclcpp_components"
   "std_srvs"
   "sensor_msgs"
   "trajectory_msgs"
-  "ssc32u_msgs")
-rclcpp_components_register_nodes(servo_controller "ssc32u_controllers::ServoController")
-set(node_plugins "${node_plugins}ssc32u_controllers::ServoController;$<TARGET_FILE:servo_controller>\n")
+  "lynxmotion_ssc32u_msgs")
+rclcpp_components_register_nodes(servo_controller "lynxmotion_ssc32u_controllers::ServoController")
+set(node_plugins "${node_plugins}lynxmotion_ssc32u_controllers::ServoController;$<TARGET_FILE:servo_controller>\n")
 
 add_executable(servo_controller_node
   src/servo_controller_node.cpp
@@ -54,14 +54,14 @@ target_link_libraries(servo_controller_node
 add_library(sabertooth_2x5_controller SHARED
   src/sabertooth_2x5_controller.cpp)
 target_compile_definitions(sabertooth_2x5_controller
-  PRIVATE "SSC32U_BUILDING_DLL")
+  PRIVATE "LYNXMOTION_SSC32U_BUILDING_DLL")
 ament_target_dependencies(sabertooth_2x5_controller
   "rclcpp"
   "rclcpp_components"
   "geometry_msgs"
-  "ssc32u_msgs")
-rclcpp_components_register_nodes(sabertooth_2x5_controller "ssc32u_controllers::Sabertooth2x5Controller")
-set(node_plugins "${node_plugins}ssc32u_controllers::Sabertooth2x5Controller;$<TARGET_FILE:sabertooth_2x5_controller>\n")
+  "lynxmotion_ssc32u_msgs")
+rclcpp_components_register_nodes(sabertooth_2x5_controller "lynxmotion_ssc32u_controllers::Sabertooth2x5Controller")
+set(node_plugins "${node_plugins}lynxmotion_ssc32u_controllers::Sabertooth2x5Controller;$<TARGET_FILE:sabertooth_2x5_controller>\n")
 
 add_executable(sabertooth_2x5_controller_node
   src/sabertooth_2x5_controller_node.cpp

@@ -28,8 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef SSC32U_DRIVER__SSC32U_HPP_
-#define SSC32U_DRIVER__SSC32U_HPP_
+#ifndef LYNXMOTION_SSC32U_DRIVER__LYNXMOTION_SSC32U_HPP_
+#define LYNXMOTION_SSC32U_DRIVER__LYNXMOTION_SSC32U_HPP_
 
 #include <fcntl.h>
 #include <termios.h>
@@ -40,7 +40,7 @@
 #include <string>
 #include <sstream>
 
-namespace ssc32u_driver
+namespace lynxmotion_ssc32u_driver
 {
 
 class SSC32
@@ -163,6 +163,6 @@ private:
   int first_instruction[32];
 };
 
-}  //namespace ssc32u_driver
+}  //namespace lynxmotion_ssc32u_driver
 
-#endif  // SSC32U_DRIVER__SSC32U_HPP_
+#endif  // LYNXMOTION_SSC32U_DRIVER__LYNXMOTION_SSC32U_HPP_

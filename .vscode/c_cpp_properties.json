@@ -4,8 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "/opt/ros/dashing/include",
-                "${workspaceFolder}/ssc32u_controllers/include",
-                "${workspaceFolder}/ssc32u_driver/include"
+                "${workspaceFolder}/lynxmotion_ssc32u_controllers/include",
+                "${workspaceFolder}/lynxmotion_ssc32u_driver/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

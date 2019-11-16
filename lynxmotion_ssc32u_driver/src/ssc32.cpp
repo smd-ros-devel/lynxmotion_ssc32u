@@ -28,7 +28,7 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "ssc32u_driver/ssc32.hpp"
+#include "lynxmotion_ssc32u_driver/ssc32.hpp"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -37,7 +37,7 @@
 #define DEBUG 0
 #endif
 
-namespace ssc32u_driver
+namespace lynxmotion_ssc32u_driver
 {
 
 //Constructor
@@ -584,4 +584,4 @@ void SSC32::log(const char* msg, ...)
 #endif
 }
 
-}  // namespace ssc32u_driver
+}  // namespace lynxmotion_ssc32u_driver
