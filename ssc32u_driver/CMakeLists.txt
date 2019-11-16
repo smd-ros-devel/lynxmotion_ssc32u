@@ -50,9 +50,17 @@ target_link_libraries(ssc32u_node
   ssc32 ssc32u_driver
 )
 
+add_executable(test_ssc32
+  src/test_ssc32.cpp
+)
+target_link_libraries(test_ssc32
+  ssc32
+)
+
 install(TARGETS
   ssc32u_driver
   ssc32u_node
+  test_ssc32
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME})
