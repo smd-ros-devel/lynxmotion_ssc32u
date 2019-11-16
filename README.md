@@ -1,6 +1,9 @@
 lynxmotion_ssc32
 ================
 
-**WARNING** - The ROS 2 driver is a work in progress and is far from working. Do not use!
+ROS packages for the Lynxmotion SSC-32U servo controller.
 
-ROS 2 driver for the Lynxmotion SSC-32 and SSC-32U servo controller.
+See the README in each individual package for details.
+
+- [lynxmotion_ssc32u_driver](./lynxmotion_ssc32u_driver/README.md)
+- [lynxmotion_ssc32u_controllers](./lynxmotion_ssc32u_controllers/README.md)
