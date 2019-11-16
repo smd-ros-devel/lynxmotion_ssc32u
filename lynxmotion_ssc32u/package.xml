@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>lynxmotion_ssc32u</name>
+  <version>0.1.0</version>
+  <description>ROS packages for the Lynxmotion SSC-32U servo controller.</description>
+  <maintainer email="matthew.w.richard@gmail.com">Matt Richard</maintainer>
+  <url type="repository">https://github.com/mattrichard/lynxmotion_ssc32</url>
+  <url type="bugtracker">https://github.com/mattrichard/lynxmotion_ssc32/issues</url>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>lynxmotion_ssc32u_controllers</exec_depend>
+  <exec_depend>lynxmotion_ssc32u_driver</exec_depend>
+  <exec_depend>lynxmotion_ssc32u_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
