@@ -42,11 +42,11 @@
 namespace lynxmotion_ssc32u_driver
 {
 
-class SSC32UDriver : public rclcpp::Node
+class SSC32UDriverNode : public rclcpp::Node
 {
 public:
-  explicit SSC32UDriver(const rclcpp::NodeOptions & options);
-  ~SSC32UDriver();
+  explicit SSC32UDriverNode(const rclcpp::NodeOptions & options);
+  ~SSC32UDriverNode();
 
 private:
   SSC32 ssc32_;

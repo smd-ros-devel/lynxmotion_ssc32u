@@ -30,24 +30,24 @@ set(node_plugins "")
 
 add_library(ssc32 SHARED src/ssc32.cpp)
 
-add_library(ssc32u_driver SHARED
-  src/ssc32u_driver.cpp)
-target_link_libraries(ssc32u_driver ssc32)
-target_compile_definitions(ssc32u_driver
+add_library(ssc32u_driver_node SHARED
+  src/ssc32u_driver_node.cpp)
+target_link_libraries(ssc32u_driver_node ssc32)
+target_compile_definitions(ssc32u_driver_node
   PRIVATE "LYNXMOTION_SSC32U_BUILDING_DLL")
-ament_target_dependencies(ssc32u_driver
+ament_target_dependencies(ssc32u_driver_node
   "rclcpp"
   "rclcpp_components"
   "std_msgs"
   "lynxmotion_ssc32u_msgs")
-rclcpp_components_register_nodes(ssc32u_driver "lynxmotion_ssc32u_driver::SSC32UDriver")
-set(node_plugins "${node_plugins}lynxmotion_ssc32u_driver::SSC32UDriver;$<TARGET_FILE:ssc32u_driver>\n")
+rclcpp_components_register_nodes(ssc32u_driver_node "lynxmotion_ssc32u_driver::SSC32UDriverNode")
+set(node_plugins "${node_plugins}lynxmotion_ssc32u_driver::SSC32UDriverNode;$<TARGET_FILE:ssc32u_driver_node>\n")
 
-add_executable(ssc32u_node
-  src/ssc32u_node.cpp
+add_executable(ssc32u_driver
+  src/ssc32u_driver.cpp
 )
-target_link_libraries(ssc32u_node
-  ssc32 ssc32u_driver
+target_link_libraries(ssc32u_driver
+  ssc32 ssc32u_driver_node
 )
 
 add_executable(test_ssc32
@@ -58,8 +58,8 @@ target_link_libraries(test_ssc32
 )
 
 install(TARGETS
+  ssc32u_driver_node
   ssc32u_driver
-  ssc32u_node
   test_ssc32
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib

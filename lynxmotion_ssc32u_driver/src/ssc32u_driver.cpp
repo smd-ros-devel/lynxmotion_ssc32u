@@ -28,115 +28,20 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "lynxmotion_ssc32u_driver/ssc32u_driver.hpp"
-
-#include <chrono>
-#include <iostream>
 #include <memory>
-#include <utility>
 
 #include "rclcpp/rclcpp.hpp"
+#include "lynxmotion_ssc32u_driver/ssc32u_driver_node.hpp"
 
-using namespace std::chrono_literals;
-using std::placeholders::_1;
-using std::placeholders::_2;
-using std::placeholders::_3;
-
-namespace lynxmotion_ssc32u_driver
+int main(int argc, char ** argv)
 {
+  rclcpp::init(argc, argv);
 
-SSC32UDriver::SSC32UDriver(const rclcpp::NodeOptions & options)
-: rclcpp::Node("lynxmotion_ssc32u", options)
-{
-  declare_parameter<std::string>("port", "/dev/ttyUSB0");
-  declare_parameter<int>("baud", 9600);
-  declare_parameter<bool>("publish_pulse_width", true);
-  declare_parameter<int>("publish_rate", 5); // TODO: Document that you shouldn't go higher than 10hz
-  declare_parameter<int>("channel_limit", 16);
+  auto node = std::make_shared<lynxmotion_ssc32u_driver::SSC32UDriverNode>(rclcpp::NodeOptions());
 
-  std::string port;
-  int baud;
+  rclcpp::spin(node->get_node_base_interface());
 
-  get_parameter("port", port);
-  get_parameter("baud", baud);
-  get_parameter("publish_pulse_width", publish_pulse_width_);
-  get_parameter("publish_rate", publish_rate_);
-  get_parameter("channel_limit", channel_limit_);
+  rclcpp::shutdown();
 
-  if (!ssc32_.open_port(port.c_str(), baud)) {
-    RCLCPP_ERROR(get_logger(), "Unable to initialize the SSC32");
-  }
-
-  if (publish_pulse_width_) {
-    pw_pub_ = create_publisher<lynxmotion_ssc32u_msgs::msg::PulseWidths>("pulse_widths", 10);
-  }
-
-  servo_command_sub_ = create_subscription<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>(
-    "servo_cmd", 1, std::bind(&SSC32UDriver::command_received, this, _1));
-
-  discrete_output_sub_ = create_subscription<lynxmotion_ssc32u_msgs::msg::DiscreteOutput>(
-    "discrete_output", 1, std::bind(&SSC32UDriver::discrete_output, this, _1));
-
-  query_pw_srv_ = create_service<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth>(
-    "query_pulse_width", std::bind(&SSC32UDriver::query_pulse_width, this, _1, _2, _3));
-
-  if (publish_pulse_width_ && publish_rate_ > 0) {
-    pw_timer_ = create_wall_timer(
-      std::chrono::milliseconds(1000 / publish_rate_), std::bind(&SSC32UDriver::publish_pulse_widths, this));
-  }
+  return 0;
 }
-
-SSC32UDriver::~SSC32UDriver()
-{
-  ssc32_.close_port();
-}
-
-void SSC32UDriver::command_received(const lynxmotion_ssc32u_msgs::msg::ServoCommandGroup::SharedPtr msg)
-{
-  for (auto &command : msg->commands) {
-    lynxmotion_ssc32u_driver::SSC32::ServoCommand cmd;
-    cmd.ch = command.channel;
-    cmd.pw = command.pw;
-
-    ssc32_.move_servo(cmd);
-  }
-}
-
-void SSC32UDriver::discrete_output(const lynxmotion_ssc32u_msgs::msg::DiscreteOutput::SharedPtr msg)
-{
-  ssc32_.discrete_output(msg->channel, msg->output ? SSC32::High : SSC32::Low);
-}
-
-void SSC32UDriver::query_pulse_width(const std::shared_ptr<rmw_request_id_t>,
-  const std::shared_ptr<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth::Request> request,
-  std::shared_ptr<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth::Response> response)
-{
-  for (auto & channel : request->channels) {
-    int pw = ssc32_.query_pulse_width(channel);
-
-    response->pulse_width.push_back(pw);
-  }
-}
-
-void SSC32UDriver::publish_pulse_widths()
-{
-  auto msg = std::make_unique<lynxmotion_ssc32u_msgs::msg::PulseWidths>();
-
-  for (int i = 0; i < channel_limit_; i++) {
-    int pw = ssc32_.query_pulse_width(i);
-
-    lynxmotion_ssc32u_msgs::msg::PulseWidth ch;
-    ch.channel = i;
-    ch.pw = pw;
-
-    msg->channels.push_back(ch);
-  }
-
-  pw_pub_->publish(std::move(msg));
-}
-
-}  // namespace lynxmotion_ssc32u_driver
-
-#include "rclcpp_components/register_node_macro.hpp"
-
-RCLCPP_COMPONENTS_REGISTER_NODE(lynxmotion_ssc32u_driver::SSC32UDriver)
