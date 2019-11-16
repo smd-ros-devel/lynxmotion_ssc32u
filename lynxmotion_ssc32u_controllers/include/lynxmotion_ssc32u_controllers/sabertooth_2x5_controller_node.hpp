@@ -39,10 +39,10 @@
 namespace lynxmotion_ssc32u_controllers
 {
 
-class Sabertooth2x5Controller : public rclcpp::Node
+class Sabertooth2x5ControllerNode : public rclcpp::Node
 {
 public:
-  explicit Sabertooth2x5Controller(const rclcpp::NodeOptions & options);
+  explicit Sabertooth2x5ControllerNode(const rclcpp::NodeOptions & options);
 
   int clamp_pulse_width(int pulse_width);
 

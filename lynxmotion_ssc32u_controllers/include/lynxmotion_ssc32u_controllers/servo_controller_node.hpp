@@ -54,10 +54,10 @@ struct Joint
 	std::string name;
 };
 
-class ServoController : public rclcpp::Node
+class ServoControllerNode : public rclcpp::Node
 {
 public:
-  explicit ServoController(const rclcpp::NodeOptions & options);
+  explicit ServoControllerNode(const rclcpp::NodeOptions & options);
 
   int clamp_pulse_width(int pulse_width);
   int invert_pulse_width(int pulse_width);

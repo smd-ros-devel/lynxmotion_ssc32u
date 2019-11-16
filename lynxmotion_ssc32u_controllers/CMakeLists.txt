@@ -30,44 +30,44 @@ include_directories(include)
 # create ament index resource which references the libraries in the binary dir
 set(node_plugins "")
 
-add_library(servo_controller SHARED
-  src/servo_controller.cpp)
-target_compile_definitions(servo_controller
+add_library(servo_controller_node SHARED
+  src/servo_controller_node.cpp)
+target_compile_definitions(servo_controller_node
   PRIVATE "LYNXMOTION_SSC32U_BUILDING_DLL")
-ament_target_dependencies(servo_controller
+ament_target_dependencies(servo_controller_node
   "rclcpp"
   "rclcpp_components"
   "std_srvs"
   "sensor_msgs"
   "trajectory_msgs"
   "lynxmotion_ssc32u_msgs")
-rclcpp_components_register_nodes(servo_controller "lynxmotion_ssc32u_controllers::ServoController")
-set(node_plugins "${node_plugins}lynxmotion_ssc32u_controllers::ServoController;$<TARGET_FILE:servo_controller>\n")
+rclcpp_components_register_nodes(servo_controller_node "lynxmotion_ssc32u_controllers::ServoControllerNode")
+set(node_plugins "${node_plugins}lynxmotion_ssc32u_controllers::ServoControllerNode;$<TARGET_FILE:servo_controller_node>\n")
 
-add_executable(servo_controller_node
-  src/servo_controller_node.cpp
+add_executable(servo_controller
+  src/servo_controller.cpp
 )
-target_link_libraries(servo_controller_node
-  servo_controller
+target_link_libraries(servo_controller
+  servo_controller_node
 )
 
-add_library(sabertooth_2x5_controller SHARED
-  src/sabertooth_2x5_controller.cpp)
-target_compile_definitions(sabertooth_2x5_controller
+add_library(sabertooth_2x5_controller_node SHARED
+  src/sabertooth_2x5_controller_node.cpp)
+target_compile_definitions(sabertooth_2x5_controller_node
   PRIVATE "LYNXMOTION_SSC32U_BUILDING_DLL")
-ament_target_dependencies(sabertooth_2x5_controller
+ament_target_dependencies(sabertooth_2x5_controller_node
   "rclcpp"
   "rclcpp_components"
   "geometry_msgs"
   "lynxmotion_ssc32u_msgs")
-rclcpp_components_register_nodes(sabertooth_2x5_controller "lynxmotion_ssc32u_controllers::Sabertooth2x5Controller")
-set(node_plugins "${node_plugins}lynxmotion_ssc32u_controllers::Sabertooth2x5Controller;$<TARGET_FILE:sabertooth_2x5_controller>\n")
+rclcpp_components_register_nodes(sabertooth_2x5_controller_node "lynxmotion_ssc32u_controllers::Sabertooth2x5ControllerNode")
+set(node_plugins "${node_plugins}lynxmotion_ssc32u_controllers::Sabertooth2x5ControllerNode;$<TARGET_FILE:sabertooth_2x5_controller_node>\n")
 
-add_executable(sabertooth_2x5_controller_node
-  src/sabertooth_2x5_controller_node.cpp
+add_executable(sabertooth_2x5_controller
+  src/sabertooth_2x5_controller.cpp
 )
-target_link_libraries(sabertooth_2x5_controller_node
-sabertooth_2x5_controller
+target_link_libraries(sabertooth_2x5_controller
+  sabertooth_2x5_controller_node
 )
 
 install(TARGETS

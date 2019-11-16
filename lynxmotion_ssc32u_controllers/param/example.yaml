@@ -1,4 +1,4 @@
-lynxmotion_ssc32u_servo_controller:
+ssc32u_servo_controller:
   ros__parameters:
     publish_joint_states: true
     joints:
