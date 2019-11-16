@@ -67,12 +67,15 @@ private:
   bool publish_joint_states_ = true;
 
   std::map<std::string, Joint> joints_map_;
+  std::map<std::string, int> joints_pos_map_;
+
   rclcpp::Subscription<ssc32u_msgs::msg::PulseWidths>::SharedPtr pulse_width_sub_;
   rclcpp::Subscription<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_trajectory_sub_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
   rclcpp::Publisher<ssc32u_msgs::msg::DiscreteOutput>::SharedPtr discrete_output_pub_;
   rclcpp::Publisher<ssc32u_msgs::msg::ServoCommandGroup>::SharedPtr servo_command_pub_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr relax_joints_srv_;
+  std::shared_ptr<rclcpp::TimerBase> init_timer_;
 
   void init();
   void joint_command_callback(const trajectory_msgs::msg::JointTrajectory::SharedPtr msg);

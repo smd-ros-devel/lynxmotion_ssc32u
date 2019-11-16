@@ -51,8 +51,6 @@ ServoController::ServoController(const rclcpp::NodeOptions & options = (
   setup_subscriptions();
   setup_publishers();
   setup_services();
-
-  init();
 }
 
 int ServoController::clamp_pulse_width(int pulse_width)
@@ -86,6 +84,11 @@ void ServoController::relax_joints()
 
 void ServoController::init()
 {
+  if (!joints_pos_map_.empty()) {
+    init_timer_->cancel();
+    return;
+  }
+
   auto command_msg = std::make_unique<ssc32u_msgs::msg::ServoCommandGroup>();
   double scale = 1.0 * 2000.0 / M_PI;
 
@@ -147,6 +150,8 @@ void ServoController::pulse_widths_callback(const ssc32u_msgs::msg::PulseWidths:
 
         joint_state_msg->position.push_back(angle);
         joint_state_msg->name.push_back(joint->name);
+
+        joints_pos_map_[joint->name] = angle;
       }
     }
   }
@@ -274,6 +279,9 @@ void ServoController::setup_publishers()
   if (publish_joint_states_) {
     joint_state_pub_ = create_publisher<sensor_msgs::msg::JointState>("joint_states", rclcpp::QoS(rclcpp::KeepLast(1)));
   }
+
+  init_timer_ = create_wall_timer(
+    std::chrono::milliseconds(500), std::bind(&ServoController::init, this));
 }
 
 void ServoController::setup_services()
