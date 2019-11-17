@@ -46,7 +46,7 @@ namespace lynxmotion_ssc32u_driver
 {
 
 SSC32UDriverNode::SSC32UDriverNode(const rclcpp::NodeOptions & options)
-: rclcpp::Node("lynxmotion_ssc32u", options)
+: rclcpp::Node("ssc32u_driver", options)
 {
   process_parameters();
   setup_subscriptions();
