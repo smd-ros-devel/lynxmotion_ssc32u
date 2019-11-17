@@ -31,16 +31,13 @@
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
-#include "ssc32u_controllers/servo_controller.hpp"
+#include "lynxmotion_ssc32u_controllers/sabertooth_2x5_controller_node.hpp"
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<ssc32u_controllers::ServoController>(
-    rclcpp::NodeOptions()
-      .allow_undeclared_parameters(true)
-      .automatically_declare_parameters_from_overrides(true));
+  auto node = std::make_shared<lynxmotion_ssc32u_controllers::Sabertooth2x5ControllerNode>(rclcpp::NodeOptions());
 
   rclcpp::spin(node->get_node_base_interface());
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(ssc32u_msgs)
+project(lynxmotion_ssc32u_msgs)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -20,7 +20,7 @@ find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
-rosidl_generate_interfaces(ssc32u_msgs
+rosidl_generate_interfaces(lynxmotion_ssc32u_msgs
   "msg/DiscreteOutput.msg"
   "msg/PulseWidth.msg"
   "msg/PulseWidths.msg"

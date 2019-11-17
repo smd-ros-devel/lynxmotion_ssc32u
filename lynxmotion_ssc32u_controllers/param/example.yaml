@@ -1,7 +1,6 @@
 ssc32u_servo_controller:
   ros__parameters:
     publish_joint_states: true
-    publish_rate: 5
     joints:
       joint_1:
         channel: 0

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(ssc32u_controllers)
+project(lynxmotion_ssc32u_driver)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -19,40 +19,48 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
-find_package(std_srvs REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(trajectory_msgs REQUIRED)
-find_package(ssc32u_msgs REQUIRED)
+find_package(rcutils REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(lynxmotion_ssc32u_msgs REQUIRED)
 
 include_directories(include)
 
 # create ament index resource which references the libraries in the binary dir
 set(node_plugins "")
 
-add_library(servo_controller SHARED
-  src/servo_controller.cpp)
-target_compile_definitions(servo_controller
-  PRIVATE "SSC32U_BUILDING_DLL")
-ament_target_dependencies(servo_controller
+add_library(ssc32 SHARED src/ssc32.cpp)
+
+add_library(ssc32u_driver_node SHARED
+  src/ssc32u_driver_node.cpp)
+target_link_libraries(ssc32u_driver_node ssc32)
+target_compile_definitions(ssc32u_driver_node
+  PRIVATE "LYNXMOTION_SSC32U_BUILDING_DLL")
+ament_target_dependencies(ssc32u_driver_node
   "rclcpp"
   "rclcpp_components"
-  "std_srvs"
-  "sensor_msgs"
-  "trajectory_msgs"
-  "ssc32u_msgs")
-rclcpp_components_register_nodes(servo_controller "ssc32u_controllers::ServoController")
-set(node_plugins "${node_plugins}ssc32u_controllers::ServoController;$<TARGET_FILE:servo_controller>\n")
+  "std_msgs"
+  "lynxmotion_ssc32u_msgs")
+rclcpp_components_register_nodes(ssc32u_driver_node "lynxmotion_ssc32u_driver::SSC32UDriverNode")
+set(node_plugins "${node_plugins}lynxmotion_ssc32u_driver::SSC32UDriverNode;$<TARGET_FILE:ssc32u_driver_node>\n")
 
-add_executable(servo_controller_node
-  src/servo_controller_node.cpp
+add_executable(ssc32u_driver
+  src/ssc32u_driver.cpp
 )
-target_link_libraries(servo_controller_node
-  servo_controller
+target_link_libraries(ssc32u_driver
+  ssc32 ssc32u_driver_node
+)
+
+add_executable(test_ssc32
+  src/test_ssc32.cpp
+)
+target_link_libraries(test_ssc32
+  ssc32
 )
 
 install(TARGETS
-  servo_controller
-  servo_controller_node
+  ssc32u_driver_node
+  ssc32u_driver
+  test_ssc32
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME})

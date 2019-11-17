@@ -31,7 +31,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
-#include "lynxmotion_ssc32/ssc32.h"
+#include "lynxmotion_ssc32u_driver/ssc32.hpp"
 
 bool is_int( char *str )
 {
@@ -71,7 +71,7 @@ int main( int argc, char **argv )
 {
 	std::string port;
 	int baud;
-	lynxmotion_ssc32::SSC32 ssc32_device;
+	lynxmotion_ssc32u_driver::SSC32 ssc32_device;
 	std::string version;
 	int i = 1;
 
@@ -163,6 +163,26 @@ int main( int argc, char **argv )
 
 		std::cout << "Done" << std::endl;
 	}
+	else if ( strcmp( argv[i], "-q" ) == 0 )
+	{
+		if ( i + 1 > argc )
+		{
+			std::cout << "Usage: " << argv[0] << " [-p PORT] [-b BAUD] -1 CHANNEL" << std::endl;
+			return 1;
+		}
+
+		if( !check_arg_is_int( argv[i + 1] ) )
+			return 1;
+
+		if( !ssc32_device.open_port( port.c_str( ), baud ) )
+			return 1;
+
+		int channel = atoi( argv[i + 1] );
+
+		int pw = ssc32_device.query_pulse_width( channel );
+
+		std::cout << "Pulse width is currently " << pw << std::endl;
+	}
 	else if( strcmp( argv[i], "-m" ) == 0 )
 	{
 		if( i + 2 > argc )
@@ -171,7 +191,7 @@ int main( int argc, char **argv )
 			return 1;
 		}
 
-		lynxmotion_ssc32::SSC32::ServoCommand cmd;
+		lynxmotion_ssc32u_driver::SSC32::ServoCommand cmd;
 
 		if( !check_arg_is_int( argv[i + 1] ) )
 			return 1;
@@ -251,11 +271,11 @@ int main( int argc, char **argv )
 			return 1;
 		int ch = atoi( argv[i + 1] );
 
-		lynxmotion_ssc32::SSC32::LogicLevel level;
+		lynxmotion_ssc32u_driver::SSC32::LogicLevel level;
 		if( strcmp( argv[i + 2], "0" ) == 0 )
-			level = lynxmotion_ssc32::SSC32::Low;
+			level = lynxmotion_ssc32u_driver::SSC32::Low;
 		else if( strcmp( argv[i + 2], "1" ) == 0 )
-			level = lynxmotion_ssc32::SSC32::High;
+			level = lynxmotion_ssc32u_driver::SSC32::High;
 		else
 		{
 			std::cout << "Level must be 0 (0V) or 1 (5V)" << std::endl;
@@ -270,13 +290,13 @@ int main( int argc, char **argv )
 	}
 	else if( strcmp( argv[i], "-a" ) == 0 )
 	{
-		lynxmotion_ssc32::SSC32::Inputs inputs[4];
+		lynxmotion_ssc32u_driver::SSC32::Inputs inputs[4];
 		float data[4];
 
-		inputs[0] = lynxmotion_ssc32::SSC32::PinA;
-		inputs[1] = lynxmotion_ssc32::SSC32::PinB;
-		inputs[2] = lynxmotion_ssc32::SSC32::PinC;
-		inputs[3] = lynxmotion_ssc32::SSC32::PinD;
+		inputs[0] = lynxmotion_ssc32u_driver::SSC32::PinA;
+		inputs[1] = lynxmotion_ssc32u_driver::SSC32::PinB;
+		inputs[2] = lynxmotion_ssc32u_driver::SSC32::PinC;
+		inputs[3] = lynxmotion_ssc32u_driver::SSC32::PinD;
 
 		if( !ssc32_device.open_port( port.c_str( ), baud ) )
 			return 1;
@@ -289,13 +309,13 @@ int main( int argc, char **argv )
 	}
 	else if( strcmp( argv[i], "-i" ) == 0 )
 	{
-		lynxmotion_ssc32::SSC32::Inputs inputs[4];
+		lynxmotion_ssc32u_driver::SSC32::Inputs inputs[4];
 		unsigned int data[4];
 
-		inputs[0] = lynxmotion_ssc32::SSC32::PinA;
-		inputs[1] = lynxmotion_ssc32::SSC32::PinB;
-		inputs[2] = lynxmotion_ssc32::SSC32::PinC;
-		inputs[3] = lynxmotion_ssc32::SSC32::PinD;
+		inputs[0] = lynxmotion_ssc32u_driver::SSC32::PinA;
+		inputs[1] = lynxmotion_ssc32u_driver::SSC32::PinB;
+		inputs[2] = lynxmotion_ssc32u_driver::SSC32::PinC;
+		inputs[3] = lynxmotion_ssc32u_driver::SSC32::PinD;
 
 		if( !ssc32_device.open_port( port.c_str( ), baud ) )
 			return 1;

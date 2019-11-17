@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>ssc32u_controllers</name>
+  <name>lynxmotion_ssc32u_controllers</name>
   <version>0.1.0</version>
   <description>Controllers for the Lynxmotion SSC32U.</description>
   <maintainer email="matthew.w.richard@gmail.com">Matt Richard</maintainer>
 
   <license>BSD</license>
 
-  <url type="bugtracker">https://github.com/smd-ros-devel/lynxmotion_ssc32</url>
-  <url type="repository">https://github.com/smd-ros-devel/lynxmotion_ssc32/issues</url>
+  <url type="repository">https://github.com/smd-ros-devel/lynxmotion_ssc32</url>
+  <url type="bugtracker">https://github.com/smd-ros-devel/lynxmotion_ssc32/issues</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -17,13 +17,15 @@
   <build_depend>std_srvs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>trajectory_msgs</build_depend>
-  <build_depend>ssc32u_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>lynxmotion_ssc32u_msgs</build_depend>
 
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>std_srvs</exec_depend>
   <exec_depend>sensor_srvs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>
-  <exec_depend>ssc32u_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>lynxmotion_ssc32u_msgs</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
