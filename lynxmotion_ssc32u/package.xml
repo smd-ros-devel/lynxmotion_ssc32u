@@ -14,6 +14,7 @@
   <exec_depend>lynxmotion_ssc32u_controllers</exec_depend>
   <exec_depend>lynxmotion_ssc32u_driver</exec_depend>
   <exec_depend>lynxmotion_ssc32u_msgs</exec_depend>
+  <exec_depend>lynxmotion_ssc32u_utils</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
