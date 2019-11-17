@@ -48,18 +48,21 @@ public:
   explicit SSC32UDriverNode(const rclcpp::NodeOptions & options);
   ~SSC32UDriverNode();
 
+  void init();
+
 private:
-  SSC32 ssc32_;
-  rclcpp::Subscription<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>::SharedPtr servo_command_sub_;
-  rclcpp::Subscription<lynxmotion_ssc32u_msgs::msg::DiscreteOutput>::SharedPtr discrete_output_sub_;
-  rclcpp::Service<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth>::SharedPtr query_pw_srv_;
-
-  rclcpp::Publisher<lynxmotion_ssc32u_msgs::msg::PulseWidths>::SharedPtr pw_pub_;
-  std::shared_ptr<rclcpp::TimerBase> pw_timer_;
-
   bool publish_pulse_width_;
   int publish_rate_;
   int channel_limit_;
+  std::string port_;
+  int baud_;
+  SSC32 ssc32_;
+
+  rclcpp::Subscription<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>::SharedPtr servo_command_sub_;
+  rclcpp::Subscription<lynxmotion_ssc32u_msgs::msg::DiscreteOutput>::SharedPtr discrete_output_sub_;
+  rclcpp::Service<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth>::SharedPtr query_pw_srv_;
+  rclcpp::Publisher<lynxmotion_ssc32u_msgs::msg::PulseWidths>::SharedPtr pw_pub_;
+  std::shared_ptr<rclcpp::TimerBase> pw_timer_;
 
   void command_received(const lynxmotion_ssc32u_msgs::msg::ServoCommandGroup::SharedPtr msg);
   void discrete_output(const lynxmotion_ssc32u_msgs::msg::DiscreteOutput::SharedPtr msg);
@@ -68,6 +71,11 @@ private:
   void query_pulse_width(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth::Request> request,
     std::shared_ptr<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth::Response> response);
+
+  void process_parameters();
+  void setup_subscriptions();
+  void setup_publishers();
+  void setup_clients();
 };
 
 }  // namespace lynxmotion_ssc32u_driver
