@@ -90,7 +90,7 @@ def main(args=None):
             result = ser.read(100).decode('utf-8')
 
             if len(result) > 0:
-                print(result.decode('utf-8'))
+                print(result)
     
     ser.close()
 
