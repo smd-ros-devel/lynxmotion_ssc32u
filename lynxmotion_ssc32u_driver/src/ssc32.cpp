@@ -574,7 +574,7 @@ std::string SSC32::get_version()
   return version;
 }
 
-void SSC32::log(const char* msg, ...)
+void SSC32::log(const char* format, ...)
 {
 #if DEBUG
   va_list args;
