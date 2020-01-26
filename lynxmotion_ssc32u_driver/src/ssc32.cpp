@@ -172,7 +172,7 @@ bool SSC32::send_message(const char *msg, int size)
 unsigned int SSC32::recv_message(unsigned char *buf, unsigned int size)
 {
   int bytes_read;
-  int total_bytes = 0;
+  unsigned int total_bytes = 0;
 
   while (total_bytes != size) {
     if ((bytes_read = read(fd, buf + total_bytes, 1)) < 0) {
@@ -381,7 +381,6 @@ bool SSC32::query_movement_status()
 int SSC32::query_pulse_width(unsigned int ch)
 {
   unsigned char buffer;
-  int bytes_read = 0;
   char msg[7];
 
   // Check if the servo channel is valid
@@ -411,10 +410,8 @@ int SSC32::query_pulse_width(unsigned int ch)
 bool SSC32::read_digital_inputs(Inputs inputs[], unsigned int outputs[], unsigned int n)
 {
   unsigned char buffer[8];
-  int bytes_read = 0;
-  int total_bytes = 0;
   char msg[255] = { 0 };
-  int i;
+  unsigned int i;
 
   // SSC-32U documentation states that only up to 8 values can be read at once
   if (n > 8) {
@@ -464,10 +461,8 @@ bool SSC32::read_digital_inputs(Inputs inputs[], unsigned int outputs[], unsigne
 bool SSC32::read_analog_inputs(Inputs inputs[], float outputs[], unsigned int n)
 {
   unsigned char buffer[8];
-  int bytes_read = 0;
-  int total_bytes = 0;
   char msg[255] = { 0 };
-  int i;
+  unsigned int i;
 
   if (n > 8) {
     log("WARNING: reading analog inputs -- n must not be greater than 8\n");
@@ -581,6 +576,9 @@ void SSC32::log(const char* format, ...)
   va_start(args, format);
   vprintf(format, args);
   va_end(args);
+#else
+  // make the build tool happy
+  format = format;
 #endif
 }
 
