@@ -3,6 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
+                "/opt/ros/eloquent/include",
                 "/opt/ros/dashing/include",
                 "${workspaceFolder}/lynxmotion_ssc32u_controllers/include",
                 "${workspaceFolder}/lynxmotion_ssc32u_driver/include"
