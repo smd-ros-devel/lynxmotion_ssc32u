@@ -92,9 +92,16 @@ void SSC32UDriverNode::query_pulse_width(const std::shared_ptr<rmw_request_id_t>
   const std::shared_ptr<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth::Request> request,
   std::shared_ptr<lynxmotion_ssc32u_msgs::srv::QueryPulseWidth::Response> response)
 {
-  for (auto & channel : request->channels) {
-    int pw = ssc32_.query_pulse_width(channel);
+  std::vector<unsigned int> pulse_widths(request->channels.size());
+  std::vector<unsigned int> channels;
 
+  for (auto & ch : request->channels) {
+    channels.push_back(ch);
+  }
+
+  ssc32_.query_pulse_width(&channels[0], &pulse_widths[0], channels.size());
+
+  for (auto & pw : pulse_widths) {
     response->pulse_width.push_back(pw);
   }
 }
@@ -103,12 +110,19 @@ void SSC32UDriverNode::publish_pulse_widths()
 {
   auto msg = std::make_unique<lynxmotion_ssc32u_msgs::msg::PulseWidths>();
 
-  for (int i = 0; i < channel_limit_; i++) {
-    int pw = ssc32_.query_pulse_width(i);
+  std::vector<unsigned int> pulse_widths(channel_limit_);
+  std::vector<unsigned int> channels;
 
+  for (int i = 0; i < channel_limit_; i++) {
+    channels.push_back(i);
+  }
+
+  ssc32_.query_pulse_width(&channels[0], &pulse_widths[0], channels.size());
+
+  for (int i = 0; i < channel_limit_; i++) {
     lynxmotion_ssc32u_msgs::msg::PulseWidth ch;
     ch.channel = i;
-    ch.pw = pw;
+    ch.pw = pulse_widths[i];
 
     msg->channels.push_back(ch);
   }

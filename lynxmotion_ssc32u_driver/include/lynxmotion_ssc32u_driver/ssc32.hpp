@@ -120,6 +120,8 @@ public:
     */
   int query_pulse_width(unsigned int ch);
 
+  void query_pulse_width(unsigned int ch[], unsigned int outputs[], unsigned int n);
+
   enum Inputs
   {
     PinA,

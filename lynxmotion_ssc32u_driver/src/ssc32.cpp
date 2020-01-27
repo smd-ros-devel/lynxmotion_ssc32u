@@ -407,6 +407,46 @@ int SSC32::query_pulse_width(unsigned int ch)
   return (10 * (int)buffer);
 }
 
+void SSC32::query_pulse_width(unsigned int ch[], unsigned int outputs[], unsigned int n)
+{
+  unsigned char buffer[32];
+  char msg[1024] = { 0 };
+  char temp[7];
+  unsigned int i;
+
+  if (n > SSC32::MAX_CHANNELS) {
+    log("ERROR: [discrete_output] Invalid number of channels [%u]\n", n);
+    return;
+  }
+
+  for (i = 0; i < n; i++) {
+    if (ch[i] > 31) {
+      log("ERROR: [discrete_output] Invalid servo channel [%u]\n", ch[i]);
+      return;
+    }
+
+    sprintf(temp, "QP%d", ch[i]);
+
+    strcat(msg, temp);
+  }
+
+  strcat(msg, "\r");
+
+  send_message(msg, strlen(msg));
+
+  // Give time for the controller to respond
+  usleep(1000);
+
+  if (recv_message(buffer, n) != n) {
+    log("ERROR: [read_digital_inputs] Failed to receive message\n");
+    return;
+  }
+
+  for (i = 0; i < n; i++) {
+    outputs[i] = (10 * (int)buffer[i]);
+  }
+}
+
 bool SSC32::read_digital_inputs(Inputs inputs[], unsigned int outputs[], unsigned int n)
 {
   unsigned char buffer[8];
