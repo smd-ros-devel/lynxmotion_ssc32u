@@ -70,13 +70,17 @@ void SSC32UDriverNode::init()
 
 void SSC32UDriverNode::command_received(const lynxmotion_ssc32u_msgs::msg::ServoCommandGroup::SharedPtr msg)
 {
+  std::vector<lynxmotion_ssc32u_driver::SSC32::ServoCommand> device_commands;
+
   for (auto &command : msg->commands) {
     lynxmotion_ssc32u_driver::SSC32::ServoCommand cmd;
     cmd.ch = command.channel;
     cmd.pw = command.pw;
 
-    ssc32_.move_servo(cmd);
+    device_commands.push_back(cmd);
   }
+
+  ssc32_.move_servo(&device_commands[0], device_commands.size());
 }
 
 void SSC32UDriverNode::discrete_output(const lynxmotion_ssc32u_msgs::msg::DiscreteOutput::SharedPtr msg)
