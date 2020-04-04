@@ -2,6 +2,7 @@
   "C_Cpp.default.includePath": [
     "/opt/ros/${env:ROS_DISTRO}/include",
     "${workspaceFolder}/lynxmotion_ssc32u_controllers/include",
-    "${workspaceFolder}/lynxmotion_ssc32u_driver/include"
+    "${workspaceFolder}/lynxmotion_ssc32u_driver/include",
+    "${workspaceFolder}/../../install/lynxmotion_ssc32u_msgs/include"
   ]
 }
