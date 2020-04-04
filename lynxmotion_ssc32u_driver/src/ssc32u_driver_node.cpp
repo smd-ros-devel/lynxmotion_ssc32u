@@ -135,7 +135,7 @@ void SSC32UDriverNode::process_parameters()
   declare_parameter<std::string>("port", "/dev/ttyUSB0");
   declare_parameter<int>("baud", 9600);
   declare_parameter<bool>("publish_pulse_width", true);
-  declare_parameter<int>("publish_rate", 5); // TODO: Document that you shouldn't go higher than 10hz
+  declare_parameter<int>("publish_rate", 5);
   declare_parameter<int>("channel_limit", 16);
 
   get_parameter("port", port_);
