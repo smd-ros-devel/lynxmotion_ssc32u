@@ -148,10 +148,10 @@ void SSC32UDriverNode::process_parameters()
 void SSC32UDriverNode::setup_subscriptions()
 {
   servo_command_sub_ = create_subscription<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>(
-    "servo_cmd", 1, std::bind(&SSC32UDriverNode::command_received, this, _1));
+    "servo_cmd", 10, std::bind(&SSC32UDriverNode::command_received, this, _1));
 
   discrete_output_sub_ = create_subscription<lynxmotion_ssc32u_msgs::msg::DiscreteOutput>(
-    "discrete_output", 1, std::bind(&SSC32UDriverNode::discrete_output, this, _1));
+    "discrete_output", 10, std::bind(&SSC32UDriverNode::discrete_output, this, _1));
 }
 
 void SSC32UDriverNode::setup_publishers()
