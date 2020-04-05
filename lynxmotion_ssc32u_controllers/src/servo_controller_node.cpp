@@ -257,27 +257,25 @@ void ServoControllerNode::setup_subscriptions()
 {
   pulse_width_sub_ = create_subscription<lynxmotion_ssc32u_msgs::msg::PulseWidths>(
     "pulse_widths",
-    1,
+    10,
     std::bind(&ServoControllerNode::pulse_widths_callback, this, _1));
 
   joint_trajectory_sub_ = create_subscription<trajectory_msgs::msg::JointTrajectory>(
     "command",
-    1,
+    10,
     std::bind(&ServoControllerNode::joint_command_callback, this, _1));
 }
 
 void ServoControllerNode::setup_publishers()
 {
   discrete_output_pub_ = create_publisher<lynxmotion_ssc32u_msgs::msg::DiscreteOutput>(
-    "discrete_output",
-    rclcpp::QoS(rclcpp::KeepLast(1)));
+    "discrete_output", 10);
 
   servo_command_pub_ = create_publisher<lynxmotion_ssc32u_msgs::msg::ServoCommandGroup>(
-    "servo_cmd",
-    rclcpp::QoS(rclcpp::KeepLast(1)));
+    "servo_cmd", 10);
 
   if (publish_joint_states_) {
-    joint_state_pub_ = create_publisher<sensor_msgs::msg::JointState>("joint_states", rclcpp::QoS(rclcpp::KeepLast(1)));
+    joint_state_pub_ = create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
   }
 
   init_timer_ = create_wall_timer(
